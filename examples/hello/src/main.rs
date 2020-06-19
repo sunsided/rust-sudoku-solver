@@ -1,3 +1,7 @@
+pub use sudoku::visitor::AcceptVisitor;
+use sudoku::visualization::ascii::AsciiPrinter;
+use sudoku::Board;
+
 fn main() {
     let board = sudoku::Board::new([
         [Some(5), Some(3), None, None, Some(7), None, None, None, None],
@@ -13,4 +17,7 @@ fn main() {
         [None, None, None, None, Some(8), None, None, Some(7), Some(9)]]);
 
     println!("{:?}", board);
+
+    let visitor = AsciiPrinter::new();
+    board.accept(&visitor);
 }
