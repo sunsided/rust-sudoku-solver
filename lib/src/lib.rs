@@ -3,7 +3,8 @@
 
 type Cell = Option<u8>;
 
-struct Board {
+#[derive(Debug)]
+pub struct Board {
     cells: [[Cell; 9]; 9]
 }
 
@@ -16,10 +17,6 @@ impl Board {
         assert!(x < 9 && y < 9);
         self.cells[x][y]
     }
-}
-
-pub fn hello() {
-    println!("Hello, Sudoku!");
 }
 
 #[cfg(test)]
