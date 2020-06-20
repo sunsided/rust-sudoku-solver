@@ -1,4 +1,4 @@
-use crate::visitor::BoardVisitor;
+use crate::visitor::Visitor;
 use crate::Board;
 
 pub struct AsciiPrinter {}
@@ -9,7 +9,7 @@ impl AsciiPrinter {
     }
 }
 
-impl BoardVisitor for AsciiPrinter {
+impl Visitor<Board> for AsciiPrinter {
     type Result = ();
 
     fn visit(&self, data: &Board) -> Self::Result {

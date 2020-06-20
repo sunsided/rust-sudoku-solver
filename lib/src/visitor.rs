@@ -1,17 +1,9 @@
-use crate::Board;
-
-pub trait BoardVisitor {
+pub trait Visitor<D> {
     type Result;
 
-    fn visit(&self, data: &Board) -> Self::Result;
+    fn visit(&self, data: &D) -> Self::Result;
 }
 
-pub trait AcceptVisitor {
-    fn accept<V: BoardVisitor>(&self, visitor: &V) -> V::Result;
-}
-
-impl AcceptVisitor for Board {
-    fn accept<V: BoardVisitor>(&self, visitor: &V) -> V::Result {
-        visitor.visit(self)
-    }
+pub trait AcceptVisitor<D> {
+    fn accept<V: Visitor<D>>(&self, visitor: &V) -> V::Result;
 }

@@ -1,7 +1,7 @@
 // TODO: https://stackoverflow.com/questions/27673674/is-there-a-way-to-create-a-data-type-that-only-accepts-a-range-of-values
 // TODO: See https://docs.rs/array2d/0.2.1/array2d/
 
-use crate::visitor::BoardVisitor;
+use crate::visitor::{Visitor, AcceptVisitor};
 
 pub type Cell = Option<u8>;
 
@@ -22,6 +22,12 @@ impl Board {
     pub fn cell(&self, x: usize, y: usize) -> Cell {
         assert!(x < 9 && y < 9);
         self.cells[x][y]
+    }
+}
+
+impl AcceptVisitor<Board> for Board {
+    fn accept<V: Visitor<Board>>(&self, visitor: &V) -> V::Result {
+        visitor.visit(self)
     }
 }
 
