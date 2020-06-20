@@ -8,45 +8,53 @@ use std::collections::hash_map::RandomState;
 use std::rc::Rc;
 use std::mem::MaybeUninit;
 
-pub type Cell = Option<u8>;
+pub type State = Option<u32>;
 type IndexSet = HashSet<usize, RandomState>;
 
-pub struct Board {
+pub struct Game {
     width: usize,
     height: usize,
-    cells: [Cell; 9 * 9],
+    valid_symbols: [i32; 9],
+    initial_state: [State; 81],
     groups: Vec<Rc<IndexSet>>,
-    group_lookup: [Rc<IndexSet>; 9 * 9]
+    group_lookup: [Rc<IndexSet>; 81]
 }
 
-impl Board {
+impl Game {
     /// Initializes a standard Sudoku board from values in row-major order.
-    pub fn new(cells: [Cell; 81]) -> Board {
+    pub fn new(state: [State; 81]) -> Game {
+        let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
-        Board { width: 9, height: 9, cells, groups, group_lookup }
+        Game { width: 9, height: 9, valid_symbols: symbols, initial_state: state, groups, group_lookup }
     }
 
-    pub fn new_empty() -> Board {
+    pub fn new_empty() -> Game {
+        let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
-        Board { width: 9, height: 9, cells: [None; 81], groups, group_lookup }
+        Game { width: 9, height: 9, valid_symbols: symbols, initial_state: [None; 81], groups, group_lookup }
     }
 
-    pub fn cell(&self, x: usize, y: usize) -> Cell {
+    pub fn cell(&self, x: usize, y: usize) -> State {
         assert!(x < self.width && y < self.height);
-        self.cells[index(x, y, self.width)]
+        self.initial_state[index(x, y, self.width)]
     }
 }
 
-impl AcceptVisitor<Board> for Board {
-    fn accept<V: Visitor<Board>>(&self, visitor: &V) -> V::Result {
+impl AcceptVisitor<Game> for Game {
+    fn accept<V: Visitor<Game>>(&self, visitor: &V) -> V::Result {
         visitor.visit(self)
     }
 }
 
 fn index(x: usize, y: usize, width: usize) -> usize {
     x + y * width
+}
+
+/// Builds a default group rooted at the specified offsets.
+fn build_default_symbols() -> [i32; 9] {
+    [1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
 
 /// Builds a default group rooted at the specified offsets.
@@ -88,28 +96,28 @@ fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexSet>>) -> [Rc<IndexS
 #[cfg(test)]
 mod tests {
     use std::mem::MaybeUninit;
-    use crate::board::{build_default_group, index};
+    use crate::game::{build_default_group, index};
 
-    fn create_matrix() -> [crate::Cell; 81] {
-        let mut array: [MaybeUninit<crate::Cell>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
+    fn create_matrix() -> [crate::State; 81] {
+        let mut array: [MaybeUninit<crate::State>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for y in 0u8..9 {
             let offset = y * 9;
             for x in 0u8..9 {
                 let index = (x + offset) as usize;
-                let value = Some(x + y * 10);
+                let value = Some((x + y * 10) as u32);
                 array[index] = MaybeUninit::new(value);
             }
         }
 
         array[5 * 9 + 0] = MaybeUninit::new(None);
 
-        unsafe { std::mem::transmute::<_, [crate::Cell; 81]>(array) }
+        unsafe { std::mem::transmute::<_, [crate::State; 81]>(array) }
     }
 
     #[test]
     fn construction_works() {
-        let board = crate::Board::new(create_matrix());
+        let board = crate::Game::new(create_matrix());
 
         assert_eq!(board.cell(4, 2), Some(24));
         assert_eq!(board.cell(0, 5), None);
@@ -140,7 +148,7 @@ mod tests {
 
     #[test]
     fn group_lookup_works() {
-        let board = crate::Board::new(create_matrix());
+        let board = crate::Game::new(create_matrix());
         let group = board.group_lookup[index(4, 4, 9)].clone();
 
         for y in 3..6 {

@@ -1,5 +1,5 @@
-pub mod board;
+pub mod game;
 pub mod visualization;
 
-pub use board::Board;
-pub use board::Cell;
+pub use game::Game;
+pub use game::State;

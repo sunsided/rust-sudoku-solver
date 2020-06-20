@@ -1,9 +1,9 @@
 use sudoku::visualization::ascii::AsciiPrinter;
-use sudoku::Board;
+use sudoku::Game;
 use visitor::AcceptVisitor;
 
 fn main() {
-    let board = sudoku::Board::new([
+    let board = sudoku::Game::new([
         Some(5), Some(3), None, None, Some(7), None, None, None, None,
         Some(6), None, None, Some(1), Some(9), Some(5), None, None, None,
         None, Some(9), Some(8), None, None, None, None, Some(6), None,
