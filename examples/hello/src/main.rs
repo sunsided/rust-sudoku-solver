@@ -1,6 +1,6 @@
-pub use sudoku::visitor::AcceptVisitor;
 use sudoku::visualization::ascii::AsciiPrinter;
 use sudoku::Board;
+use visitor::AcceptVisitor;
 
 fn main() {
     let board = sudoku::Board::new([

@@ -1,5 +1,5 @@
 [package]
-name = "sudoku"
+name = "visitor"
 version = "0.1.0"
 authors = ["Markus Mayer"]
 edition = "2018"

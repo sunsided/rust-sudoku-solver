@@ -1,5 +1,6 @@
 [workspace]
 members = [
-    "lib",
+    "lib/sudoku",
+    "lib/visitor",
     "examples/hello"
 ]

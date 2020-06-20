@@ -1,4 +1,4 @@
-use crate::visitor::Visitor;
+use visitor::Visitor;
 use crate::Board;
 
 pub struct AsciiPrinter {}

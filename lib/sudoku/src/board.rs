@@ -1,7 +1,7 @@
 // TODO: https://stackoverflow.com/questions/27673674/is-there-a-way-to-create-a-data-type-that-only-accepts-a-range-of-values
 // TODO: See https://docs.rs/array2d/0.2.1/array2d/
 
-use crate::visitor::{Visitor, AcceptVisitor};
+use visitor::{Visitor, AcceptVisitor};
 
 pub type Cell = Option<u8>;
 
