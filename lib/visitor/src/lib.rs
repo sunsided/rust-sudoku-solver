@@ -11,8 +11,37 @@ pub trait AcceptVisitor<D> {
 
 #[cfg(test)]
 mod tests {
+    use crate::{AcceptVisitor, Visitor};
+
+    struct Data {
+        pub value: u8
+    }
+
+    impl Data {
+        pub fn new(value: u8) -> Data { Data { value }}
+    }
+
+    struct DoublingVisitor {}
+
+    impl Visitor<Data> for DoublingVisitor {
+        type Result = u8;
+
+        fn visit(&self, data: &Data) -> Self::Result {
+            data.value * 2
+        }
+    }
+
+    impl AcceptVisitor<Data> for Data {
+        fn accept<V: Visitor<Data>>(&self, visitor: &V) -> <V as Visitor<Data>>::Result {
+            visitor.visit(self)
+        }
+    }
+
     #[test]
     fn it_works() {
-        assert_eq!(2 + 2, 4);
+        let data = Data::new(42);
+        let visitor = DoublingVisitor { };
+        let value = data.accept(&visitor);
+        assert_eq!(value, 84);
     }
 }
