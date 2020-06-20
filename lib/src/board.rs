@@ -3,7 +3,7 @@
 
 use crate::visitor::BoardVisitor;
 
-type Cell = Option<u8>;
+pub type Cell = Option<u8>;
 
 #[derive(Debug)]
 pub struct Board {
