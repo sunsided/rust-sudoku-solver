@@ -5,23 +5,29 @@ use visitor::{Visitor, AcceptVisitor};
 
 pub type Cell = Option<u8>;
 
-#[derive(Debug)]
+fn index(x: usize, y: usize, width: usize) -> usize {
+    x + y * width
+}
+
 pub struct Board {
-    cells: [[Cell; 9]; 9]
+    width: usize,
+    height: usize,
+    cells: [Cell; 9 * 9]
 }
 
 impl Board {
-    pub fn new(cells: [[Cell; 9]; 9]) -> Board {
-        Board { cells }
+    /// Initializes a standard Sudoku board from values in row-major order.
+    pub fn new(cells: [Cell; 9 * 9]) -> Board {
+        Board { width: 9, height: 9, cells }
     }
 
     pub fn new_empty() -> Board {
-        Board { cells: [[None; 9]; 9] }
+        Board { width: 9, height: 9, cells: [None; 9* 9] }
     }
 
     pub fn cell(&self, x: usize, y: usize) -> Cell {
-        assert!(x < 9 && y < 9);
-        self.cells[x][y]
+        assert!(x < self.width && y < self.height);
+        self.cells[index(x, y, self.width)]
     }
 }
 
@@ -35,33 +41,28 @@ impl AcceptVisitor<Board> for Board {
 mod tests {
     use std::mem::MaybeUninit;
 
-    fn create_row(row: u8) -> [crate::Cell; 9] {
-        let y = row * 10;
+    fn create_matrix() -> [crate::Cell; 81] {
+        let mut array: [MaybeUninit<crate::Cell>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
-        // The official way to not have to initialize arrays upon creation.
-        let mut array: [MaybeUninit<crate::Cell>; 9] = unsafe { MaybeUninit::uninit().assume_init() };
-        for i in 0..9 {
-            array[i] = MaybeUninit::new(Some(i as u8 + y));
+        for y in 0u8..9 {
+            let offset = y * 9;
+            for x in 0u8..9 {
+                let index = (x + offset) as usize;
+                let value = Some(x + y * 10);
+                array[index] = MaybeUninit::new(value);
+            }
         }
-        array[5] = MaybeUninit::new(None);
 
-        unsafe { std::mem::transmute::<_, [crate::Cell; 9]>(array) }
+        array[5 * 9 + 0] = MaybeUninit::new(None);
+
+        unsafe { std::mem::transmute::<_, [crate::Cell; 81]>(array) }
     }
 
     #[test]
     fn construction_works() {
-        let board = crate::Board::new([
-            create_row(0),
-            create_row(1),
-            create_row(2),
-            create_row(3),
-            create_row(4),
-            create_row(5),
-            create_row(6),
-            create_row(7),
-            create_row(8)]);
+        let board = crate::Board::new(create_matrix());
 
-        assert_eq!(board.cell(4, 2), Some(42));
+        assert_eq!(board.cell(4, 2), Some(24));
         assert_eq!(board.cell(0, 5), None);
     }
 }
