@@ -27,14 +27,19 @@ impl Board {
 
 #[cfg(test)]
 mod tests {
+    use std::mem::MaybeUninit;
+
     fn create_row(row: u8) -> [crate::Cell; 9] {
         let y = row * 10;
-        let mut array = [crate::Cell::None; 9];
+
+        // The official way to not have to initialize arrays upon creation.
+        let mut array: [MaybeUninit<crate::Cell>; 9] = unsafe { MaybeUninit::uninit().assume_init() };
         for i in 0..9 {
-            array[i] = Some(i as u8 + y);
+            array[i] = MaybeUninit::new(Some(i as u8 + y));
         }
-        array[5] = None;
-        array
+        array[5] = MaybeUninit::new(None);
+
+        unsafe { std::mem::transmute::<_, [crate::Cell; 9]>(array) }
     }
 
     #[test]
