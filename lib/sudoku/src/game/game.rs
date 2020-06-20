@@ -10,12 +10,12 @@ use std::mem::MaybeUninit;
 use crate::{State, CellValue};
 use crate::game::index;
 
-type IndexSet = HashSet<usize, RandomState>;
+pub type IndexSet = HashSet<usize, RandomState>;
 
 pub struct Game {
     pub width: usize,
     pub height: usize,
-    valid_symbols: [i32; 9],
+    valid_symbols: [u32; 9],
     initial_state: State,
     groups: Vec<Rc<IndexSet>>,
     group_lookup: [Rc<IndexSet>; 81]
@@ -69,7 +69,7 @@ impl Game {
         &self.group_lookup[index(x, y, self.width)]
     }
 
-    pub fn symbols(&self) -> &[i32; 9] {
+    pub fn symbols(&self) -> &[u32; 9] {
         &self.valid_symbols
     }
 }
@@ -81,7 +81,7 @@ impl AcceptVisitor<State> for Game {
 }
 
 /// Builds a default group rooted at the specified offsets.
-fn build_default_symbols() -> [i32; 9] {
+fn build_default_symbols() -> [u32; 9] {
     [1, 2, 3, 4, 5, 6, 7, 8, 9]
 }
 

@@ -3,8 +3,10 @@ use visitor::prelude::*;
 use std::collections::HashSet;
 use std::collections::hash_map::RandomState;
 use crate::{Game, State, CellValue};
+use crate::game::game::IndexSet;
 
 pub struct GameState {
+    pub missing: IndexSet,
     game: Rc<Game>,
     state: State
 }
@@ -12,43 +14,72 @@ pub struct GameState {
 impl GameState {
     pub fn new(game: Game) -> GameState {
         let state = game.fork_state();
-        GameState { game: Rc::new(game), state }
+        let missing = state.missing();
+        GameState { game: Rc::new(game), state, missing }
     }
 
     pub fn fork(&self) -> GameState {
-        GameState { game: self.game.clone(), state: self.state.fork() }
+        let state = self.state.fork();
+        let missing = self.state.missing();
+        GameState { game: self.game.clone(), state, missing }
+    }
+
+    pub fn place_and_fork(&self, index: usize, value: u32) -> GameState {
+        let mut state = self.state.place_and_fork(index, value);
+
+        let mut missing = self.state.missing();
+        missing.remove(&index);
+
+        GameState { game: self.game.clone(), state, missing }
+    }
+
+    pub fn symbols(&self) -> &[u32; 9] {
+        self.game.symbols()
     }
 
     pub fn cell(&self, x: usize, y: usize) -> CellValue {
         self.state.cell(x, y, self.game.width, self.game.height)
     }
 
-    pub fn get_row_values(&self, y: usize, state: &[CellValue; 81]) -> HashSet<CellValue, RandomState> {
+    pub fn get_row_values(&self, y: usize) -> HashSet<CellValue, RandomState> {
         let width = self.game.width;
+        let height = self.game.height;
         let mut set = HashSet::new();
         for x in 0..width {
-            set.insert(state[index(x, y, width)]);
+            set.insert(self.state.cell(x, y, width, height));
         }
         set
     }
 
-    pub fn get_column_values(&self, x: usize, state: &[CellValue; 81]) -> HashSet<CellValue, RandomState> {
+    pub fn get_column_values(&self, x: usize) -> HashSet<CellValue, RandomState> {
         let width = self.game.width;
         let height = self.game.height;
         let mut set = HashSet::new();
         for y in 0..height {
-            set.insert(state[index(x, y, width)]);
+            set.insert(self.state.cell(x, y, width, height));
         }
         set
     }
 
-    pub fn get_group_values(&self, x: usize, y: usize, state: &[CellValue; 81]) -> HashSet<CellValue, RandomState> {
+    pub fn get_group_values(&self, x: usize, y: usize) -> HashSet<CellValue, RandomState> {
+        let width = self.game.width;
+        let height = self.game.height;
         let mut set = HashSet::new();
         let group = &self.game.group_at(x, y);
         for index in group.iter() {
-            set.insert(state[*index]);
+            set.insert(self.state.cell_at(*index, width, height));
         }
         set
+    }
+
+    pub fn xy_to_index(&self, x: usize, y: usize) -> usize {
+        x + y * self.game.width
+    }
+
+    pub fn index_to_xy(&self, index: usize) -> (usize, usize) {
+        let x = index / self.game.width;
+        let y = index % self.game.width;
+        (x, y)
     }
 }
 
