@@ -1,3 +1,7 @@
+pub mod prelude {
+    pub use crate::{Visitor, AcceptVisitor};
+}
+
 pub trait Visitor<D> {
     type Result;
 

@@ -7,49 +7,74 @@ use std::vec::Vec;
 use std::collections::hash_map::RandomState;
 use std::rc::Rc;
 use std::mem::MaybeUninit;
+use crate::State;
+use crate::state::index;
 
-pub type State = Option<u32>;
+pub type CellValue = Option<u32>;
 type IndexSet = HashSet<usize, RandomState>;
 
 pub struct Game {
-    width: usize,
-    height: usize,
+    pub width: usize,
+    pub height: usize,
     valid_symbols: [i32; 9],
-    initial_state: [State; 81],
+    initial_state: State,
     groups: Vec<Rc<IndexSet>>,
     group_lookup: [Rc<IndexSet>; 81]
 }
 
+
 impl Game {
     /// Initializes a standard Sudoku board from values in row-major order.
-    pub fn new(state: [State; 81]) -> Game {
+    pub fn new(state: [CellValue; 81]) -> Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
-        Game { width: 9, height: 9, valid_symbols: symbols, initial_state: state, groups, group_lookup }
+        Game { width: 9, height: 9, valid_symbols: symbols,
+            initial_state: State::new(state),
+            groups, group_lookup }
     }
 
     pub fn new_empty() -> Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
-        Game { width: 9, height: 9, valid_symbols: symbols, initial_state: [None; 81], groups, group_lookup }
+        Game { width: 9, height: 9, valid_symbols: symbols,
+            initial_state: State::new([None; 81]),
+            groups, group_lookup }
     }
 
-    pub fn cell(&self, x: usize, y: usize) -> State {
-        assert!(x < self.width && y < self.height);
-        self.initial_state[index(x, y, self.width)]
+    pub fn new_example() -> Game {
+        Game::new([
+            Some(5), Some(3), None, None, Some(7), None, None, None, None,
+            Some(6), None, None, Some(1), Some(9), Some(5), None, None, None,
+            None, Some(9), Some(8), None, None, None, None, Some(6), None,
+
+            Some(8), None, None, None, Some(6), None, None, None, Some(3),
+            Some(4), None, None, Some(8), None, Some(3), None, None, Some(1),
+            Some(7), None, None, None, Some(2), None, None, None, Some(6),
+
+            None, Some(6), None, None, None, None, Some(2), Some(8), None,
+            None, None, None, Some(4), Some(1), Some(9), None, None, Some(5),
+            None, None, None, None, Some(8), None, None, Some(7), Some(9)])
+    }
+
+    pub fn cell(&self, x: usize, y: usize) -> CellValue {
+        self.initial_state.cell(x, y, self.width, self.height)
+    }
+
+    pub fn fork_state(&self) -> State {
+        self.initial_state.fork()
+    }
+
+    pub fn group_at(&self, x: usize, y: usize) -> &IndexSet {
+        &self.group_lookup[index(x, y, self.width)]
     }
 }
 
-impl AcceptVisitor<Game> for Game {
-    fn accept<V: Visitor<Game>>(&self, visitor: &V) -> V::Result {
-        visitor.visit(self)
+impl AcceptVisitor<State> for Game {
+    fn accept<V: Visitor<State>>(&self, visitor: &V) -> V::Result {
+        visitor.visit(&self.initial_state)
     }
-}
-
-fn index(x: usize, y: usize, width: usize) -> usize {
-    x + y * width
 }
 
 /// Builds a default group rooted at the specified offsets.
@@ -98,8 +123,8 @@ mod tests {
     use std::mem::MaybeUninit;
     use crate::game::{build_default_group, index};
 
-    fn create_matrix() -> [crate::State; 81] {
-        let mut array: [MaybeUninit<crate::State>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
+    fn create_matrix() -> [crate::CellValue; 81] {
+        let mut array: [MaybeUninit<crate::CellValue>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for y in 0u8..9 {
             let offset = y * 9;
@@ -112,7 +137,7 @@ mod tests {
 
         array[5 * 9 + 0] = MaybeUninit::new(None);
 
-        unsafe { std::mem::transmute::<_, [crate::State; 81]>(array) }
+        unsafe { std::mem::transmute::<_, [crate::CellValue; 81]>(array) }
     }
 
     #[test]

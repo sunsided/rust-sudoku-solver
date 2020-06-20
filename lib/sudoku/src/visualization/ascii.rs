@@ -1,5 +1,5 @@
-use visitor::Visitor;
-use crate::Game;
+use visitor::prelude::*;
+use crate::{Game, State, GameState};
 
 pub struct AsciiPrinter {}
 
@@ -9,10 +9,10 @@ impl AsciiPrinter {
     }
 }
 
-impl Visitor<Game> for AsciiPrinter {
+impl Visitor<GameState> for AsciiPrinter {
     type Result = ();
 
-    fn visit(&self, data: &Game) -> Self::Result {
+    fn visit(&self, data: &GameState) -> Self::Result {
         for y in 0..9 {
             for x in 0..9 {
                 print_cell(data, x, y);
@@ -22,7 +22,7 @@ impl Visitor<Game> for AsciiPrinter {
     }
 }
 
-fn print_cell(data: &Game, x: usize, y: usize) {
+fn print_cell(data: &GameState, x: usize, y: usize) {
     let cell = data.cell(x, y);
     match cell {
         None => print!("·"),
