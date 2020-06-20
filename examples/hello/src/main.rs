@@ -1,6 +1,6 @@
-use sudoku::visualization::ascii::AsciiPrinter;
-use sudoku::{Game, GameState};
 use visitor::prelude::*;
+use sudoku::prelude::*;
+use sudoku::visualization::ascii::AsciiPrinter;
 
 fn main() {
     let game = GameState::new(Game::new_example());
