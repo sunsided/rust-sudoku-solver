@@ -1,8 +1,8 @@
-use crate::{Game, State, CellValue};
 use std::rc::Rc;
 use visitor::prelude::*;
 use std::collections::HashSet;
 use std::collections::hash_map::RandomState;
+use crate::{Game, State, CellValue};
 
 pub struct GameState {
     game: Rc<Game>,

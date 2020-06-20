@@ -1,7 +1,9 @@
 use std::collections::HashSet;
 use std::collections::hash_map::RandomState;
 use visitor::{AcceptVisitor, Visitor};
-use crate::{CellValue, Game};
+use crate::Game;
+
+pub type CellValue = Option<u32>;
 
 pub struct State {
     state: Box<[CellValue; 81]>

@@ -1,13 +1,7 @@
-mod game_state;
-mod state;
 mod game;
 pub mod visualization;
 
-pub use game_state::GameState;
+pub use game::GameState;
 pub use game::Game;
 pub use game::CellValue;
-pub use state::State;
-
-pub mod prelude {
-    pub use crate::{Game, GameState, State, CellValue};
-}
+pub use game::State;
