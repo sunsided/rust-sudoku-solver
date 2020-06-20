@@ -29,15 +29,12 @@ impl Board {
 mod tests {
     fn create_row(row: u8) -> [crate::Cell; 9] {
         let y = row * 10;
-        [Some(0 + y),
-            Some(1 + y),
-            Some(2 + y),
-            Some(3 + y),
-            Some(4 + y),
-            None,
-            Some(6 + y),
-            Some(7 + y),
-            Some(8 + y)]
+        let mut array = [crate::Cell::None; 9];
+        for i in 0..9 {
+            array[i] = Some(i as u8 + y);
+        }
+        array[5] = None;
+        array
     }
 
     #[test]
