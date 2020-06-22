@@ -25,11 +25,10 @@ impl DefaultSolver {
 
             let new_state = Self::apply_trivial_moves(state, trivial_cells);
             stack.push(new_state);
-            break;
         }
 
         let final_state = stack.pop();
-        final_state.unwrap().fork()
+        final_state.unwrap()
     }
 
     fn apply_trivial_moves(state: GameState, trivial_cells: Vec<(usize, Vec<u32>)>) -> GameState {
