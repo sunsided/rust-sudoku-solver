@@ -14,9 +14,16 @@ impl DefaultSolver {
         let mut stack = Vec::<GameState>::new();
         stack.push(game.fork());
 
-        while stack.len() > 1 {
-            let state = stack.last().unwrap();
+        while !stack.is_empty() {
+            println!("{}", stack.len());
+            let mut state = stack.pop().unwrap();
             let (trivial_cells, _open_cells) = DefaultSolver::find_open_cells(&state, &valid_symbols);
+
+            // TODO: Only expand trivial moves for now.
+            if trivial_cells.is_empty() {
+                stack.push(state);
+                break;
+            }
 
             // Iterate over trivial solutions first
             for (index, candidates) in trivial_cells.iter() {
@@ -24,11 +31,12 @@ impl DefaultSolver {
                 println!("Trivial move!");
 
                 let value = *candidates.iter().next().unwrap();
-                stack.push(state.place_and_fork(*index, value));
+                state = state.place_and_fork(*index, value);
             }
+            stack.push(state);
         }
 
-        let final_state = stack.last();
+        let final_state = stack.pop();
         final_state.unwrap().fork()
     }
 
