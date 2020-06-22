@@ -102,7 +102,7 @@ fn build_set_of_default_groups() -> Vec<Rc<IndexSet>> {
     for y in (0..9).step_by(3) {
         for x in (0..9).step_by(3) {
             let set = build_default_group(x, y);
-            groups.insert(groups.len(), set);
+            groups.push(set);
         }
     }
     groups

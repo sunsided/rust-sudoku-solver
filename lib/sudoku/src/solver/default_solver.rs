@@ -4,6 +4,7 @@ use std::collections::hash_map::RandomState;
 
 type Index = usize;
 type CellValuesTuple = (Index, usize, BTreeSet<u32>);
+type TrivialCellValuesTuple = (Index, BTreeSet<u32>);
 
 pub struct DefaultSolver {}
 
@@ -12,33 +13,29 @@ impl DefaultSolver {
         let valid_symbols = DefaultSolver::collect_valid_symbols(game);
 
         let mut stack = Vec::<GameState>::new();
-        stack.insert(stack.len(), game.fork());
+        stack.push(game.fork());
 
-        while stack.len() > 0 {
-            let open_cells = DefaultSolver::find_open_cells(&state, &valid_symbols);
+        while stack.len() > 1 {
+            let state = stack.last().unwrap();
+            let (trivial_cells, open_cells) = DefaultSolver::find_open_cells(&state, &valid_symbols);
 
-            for (index, size, candidates) in open_cells.iter() {
-                if *size > 1 {
-                    break;
-                }
-
-                // TODO: Iterate over trivial solutions first!
-
+            // Iterate over trivial solutions first
+            for (index, candidates) in trivial_cells.iter() {
+                assert_eq!(candidates.len(), 1);
                 println!("Trivial move!");
 
                 let value = *candidates.iter().next().unwrap();
-                state = state.place_and_fork(*index, value);
+                stack.push(state.place_and_fork(*index, value));
             }
         }
 
-
-
-        println!("{}", open_cells.len());
-        state
+        let final_state = stack.last();
+        final_state.unwrap().fork()
     }
 
     /// Finds the open cells and returns them in order of ascending move options.
-    fn find_open_cells(game: &GameState, valid_symbols: &BTreeSet<Option<u32>>) -> Vec<(usize, usize, BTreeSet<u32>)> {
+    fn find_open_cells(game: &GameState, valid_symbols: &BTreeSet<Option<u32>>) -> (Vec<TrivialCellValuesTuple>, Vec<CellValuesTuple>) {
+        let mut trivial_cells = Vec::<TrivialCellValuesTuple>::new();
         let mut open_cells = Vec::<CellValuesTuple>::new();
 
         // Iterate each empty cell
@@ -53,14 +50,21 @@ impl DefaultSolver {
 
             // Determine the remaining possible moves for the current cell.
             let missing_values: BTreeSet<u32> = valid_symbols.difference(&values).map(|x| x.unwrap()).collect();
+            let length = missing_values.len();
 
-            let value = (*index, missing_values.len(), missing_values);
-            open_cells.insert(open_cells.len(), value);
+            if length == 1 {
+                let value = (*index, missing_values);
+                trivial_cells.insert(trivial_cells.len(), value);
+            }
+            else {
+                let value = (*index, missing_values.len(), missing_values);
+                open_cells.insert(open_cells.len(), value);
+            }
         }
 
         // Order by possible moves, ascending.
         open_cells.sort_unstable_by_key(|tuple| tuple.1);
-        open_cells
+        (trivial_cells, open_cells)
     }
 
     fn collect_valid_symbols(game: &GameState) -> BTreeSet<CellValue> {
