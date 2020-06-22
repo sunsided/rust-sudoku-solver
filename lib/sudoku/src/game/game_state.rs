@@ -82,8 +82,8 @@ impl GameState {
     }
 
     pub fn index_to_xy(&self, index: usize) -> (usize, usize) {
-        let x = index / self.game.width;
-        let y = index % self.game.width;
+        let x = index % self.game.width;
+        let y = index / self.game.width;
         (x, y)
     }
 }
