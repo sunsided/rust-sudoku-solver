@@ -14,9 +14,7 @@ impl DefaultSolver {
         let mut stack = Vec::<GameState>::new();
         stack.push(game.fork());
 
-        while !stack.is_empty() {
-            println!("{}", stack.len());
-            let mut state = stack.pop().unwrap();
+        while let Some(mut state) = stack.pop() {
             let (trivial_cells, _open_cells) = DefaultSolver::find_open_cells(&state, &valid_symbols);
 
             // TODO: Only expand trivial moves for now.
