@@ -40,38 +40,38 @@ impl GameState {
         self.state.cell(x, y, self.game.width, self.game.height)
     }
 
-    pub fn get_row_values(&self, y: usize) -> BTreeSet<u32> {
+    pub fn get_row_values(&self, y: usize) -> Vec<u32> {
         let width = self.game.width;
         let height = self.game.height;
-        let mut set = BTreeSet::new();
+        let mut set = Vec::new();
         for x in 0..width {
             if let Some(value) = self.state.cell(x, y, width, height) {
-                set.insert(value);
+                set.push(value);
             }
         }
         set
     }
 
-    pub fn get_column_values(&self, x: usize) -> BTreeSet<u32> {
+    pub fn get_column_values(&self, x: usize) -> Vec<u32> {
         let width = self.game.width;
         let height = self.game.height;
-        let mut set = BTreeSet::new();
+        let mut set = Vec::new();
         for y in 0..height {
             if let Some(value) = self.state.cell(x, y, width, height) {
-                set.insert(value);
+                set.push(value);
             }
         }
         set
     }
 
-    pub fn get_group_values(&self, x: usize, y: usize) -> BTreeSet<u32> {
+    pub fn get_group_values(&self, x: usize, y: usize) -> Vec<u32> {
         let width = self.game.width;
         let height = self.game.height;
-        let mut set = BTreeSet::new();
+        let mut set = Vec::new();
         let group = &self.game.group_at(x, y);
         for index in group.iter() {
             if let Some(value) = self.state.cell_at(*index, width, height) {
-                set.insert(value);
+                set.push(value);
             }
         }
         set
