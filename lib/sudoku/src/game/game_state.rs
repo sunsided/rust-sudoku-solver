@@ -25,7 +25,7 @@ impl GameState {
     }
 
     pub fn place_and_fork(&self, index: usize, value: u32) -> GameState {
-        let mut state = self.state.place_and_fork(index, value);
+        let state = self.state.place_and_fork(index, value);
 
         let mut missing = self.state.missing();
         missing.remove(&index);

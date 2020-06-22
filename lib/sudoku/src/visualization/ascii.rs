@@ -1,5 +1,5 @@
 use visitor::prelude::*;
-use crate::{Game, State, GameState};
+use crate::GameState;
 
 pub struct AsciiPrinter {}
 

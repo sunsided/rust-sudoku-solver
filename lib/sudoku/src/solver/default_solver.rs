@@ -1,6 +1,5 @@
 use crate::{GameState, CellValue};
-use std::collections::{HashSet, BTreeSet, BTreeMap};
-use std::collections::hash_map::RandomState;
+use std::collections::BTreeSet;
 
 type Index = usize;
 type CellValuesTuple = (Index, usize, BTreeSet<u32>);
@@ -17,7 +16,7 @@ impl DefaultSolver {
 
         while stack.len() > 1 {
             let state = stack.last().unwrap();
-            let (trivial_cells, open_cells) = DefaultSolver::find_open_cells(&state, &valid_symbols);
+            let (trivial_cells, _open_cells) = DefaultSolver::find_open_cells(&state, &valid_symbols);
 
             // Iterate over trivial solutions first
             for (index, candidates) in trivial_cells.iter() {

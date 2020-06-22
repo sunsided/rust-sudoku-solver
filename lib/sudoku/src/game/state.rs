@@ -1,7 +1,3 @@
-use std::collections::HashSet;
-use std::collections::hash_map::RandomState;
-use visitor::{AcceptVisitor, Visitor};
-use crate::Game;
 use crate::game::IndexSet;
 
 pub type CellValue = Option<u32>;
