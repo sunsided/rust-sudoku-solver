@@ -1,7 +1,6 @@
 use std::rc::Rc;
 use visitor::prelude::*;
-use std::collections::HashSet;
-use std::collections::hash_map::RandomState;
+use std::collections::BTreeSet;
 use crate::{Game, State, CellValue};
 use crate::game::game::IndexSet;
 
@@ -41,33 +40,39 @@ impl GameState {
         self.state.cell(x, y, self.game.width, self.game.height)
     }
 
-    pub fn get_row_values(&self, y: usize) -> HashSet<CellValue, RandomState> {
+    pub fn get_row_values(&self, y: usize) -> BTreeSet<u32> {
         let width = self.game.width;
         let height = self.game.height;
-        let mut set = HashSet::new();
+        let mut set = BTreeSet::new();
         for x in 0..width {
-            set.insert(self.state.cell(x, y, width, height));
+            if let Some(value) = self.state.cell(x, y, width, height) {
+                set.insert(value);
+            }
         }
         set
     }
 
-    pub fn get_column_values(&self, x: usize) -> HashSet<CellValue, RandomState> {
+    pub fn get_column_values(&self, x: usize) -> BTreeSet<u32> {
         let width = self.game.width;
         let height = self.game.height;
-        let mut set = HashSet::new();
+        let mut set = BTreeSet::new();
         for y in 0..height {
-            set.insert(self.state.cell(x, y, width, height));
+            if let Some(value) = self.state.cell(x, y, width, height) {
+                set.insert(value);
+            }
         }
         set
     }
 
-    pub fn get_group_values(&self, x: usize, y: usize) -> HashSet<CellValue, RandomState> {
+    pub fn get_group_values(&self, x: usize, y: usize) -> BTreeSet<u32> {
         let width = self.game.width;
         let height = self.game.height;
-        let mut set = HashSet::new();
+        let mut set = BTreeSet::new();
         let group = &self.game.group_at(x, y);
         for index in group.iter() {
-            set.insert(self.state.cell_at(*index, width, height));
+            if let Some(value) = self.state.cell_at(*index, width, height) {
+                set.insert(value);
+            }
         }
         set
     }
