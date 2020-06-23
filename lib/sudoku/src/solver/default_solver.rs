@@ -62,10 +62,7 @@ fn collect_missing_values(index: &usize, state: &GameState, valid_symbols: &BTre
     let group = state.get_group_values(x, y);
 
     // Determine the remaining possible moves for the current cell.
-    let mut values = BTreeSet::new();
-    values.extend(column);
-    values.extend(row);
-    values.extend(group);
+    let values = join_btreeset!(column, row, group);
     valid_symbols.difference(&values).map(|x| *x).collect()
 }
 
