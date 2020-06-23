@@ -17,7 +17,7 @@ pub fn solve(game: &GameState) -> GameState {
 
         // TODO: Only expand trivial moves for now.
         if trivial_cells.is_empty() {
-            assert!(open_cells.is_empty());
+            //assert!(open_cells.is_empty());
             stack.push(state);
             break;
         }

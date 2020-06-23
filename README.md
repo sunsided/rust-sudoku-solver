@@ -23,6 +23,12 @@ The following is a solution to the above picture:
 
 ![](.readme/solution.png)
 
+## Example Nonomino
+
+For reference, here's an example Nonomino from the Wikipedia [Sudoku](https://en.wikipedia.org/wiki/Sudoku) page:
+
+![](.readme/nonomino.png)
+
 ## License
 
 Copyright © 2020 Markus Mayer

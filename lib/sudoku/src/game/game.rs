@@ -2,7 +2,7 @@
 // TODO: See https://docs.rs/array2d/0.2.1/array2d/
 
 use visitor::{Visitor, AcceptVisitor};
-use std::collections::HashSet;
+use std::collections::{HashSet, BTreeSet};
 use std::vec::Vec;
 use std::collections::hash_map::RandomState;
 use std::rc::Rc;
@@ -20,12 +20,19 @@ pub struct Game {
     group_lookup: [Rc<IndexSet>; 81]
 }
 
-
 impl Game {
     /// Initializes a standard Sudoku board from values in row-major order.
     pub fn new(state: [CellValue; 81]) -> Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
+        let group_lookup = build_default_index_to_group_lookup(&groups);
+        Game { width: 9, height: 9, valid_symbols: symbols,
+            initial_state: State::new(state),
+            group_lookup }
+    }
+
+    pub fn new_with_groups(state: [CellValue; 81], groups: Vec<Rc<IndexSet>>) -> Game {
+        let symbols = build_default_symbols();
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game { width: 9, height: 9, valid_symbols: symbols,
             initial_state: State::new(state),
@@ -54,6 +61,31 @@ impl Game {
             None, Some(6), None, None, None, None, Some(2), Some(8), None,
             None, None, None, Some(4), Some(1), Some(9), None, None, Some(5),
             None, None, None, None, Some(8), None, None, Some(7), Some(9)])
+    }
+
+    pub fn new_example_nonomino() -> Game {
+        let mut index_set = Vec::new();
+        index_set.push(Rc::new(hashset!(0, 1, 2, 9, 10, 11, 18, 27, 28)));
+        index_set.push(Rc::new(hashset!(3, 12, 13, 14, 23, 24, 25, 34, 35)));
+        index_set.push(Rc::new(hashset!(4, 5, 6, 7, 8, 15, 16, 17, 26)));
+        index_set.push(Rc::new(hashset!(19, 20, 21, 22, 29, 36, 37, 38, 39)));
+        index_set.push(Rc::new(hashset!(30, 31, 32, 33, 40, 47, 48, 49, 50)));
+        index_set.push(Rc::new(hashset!(41, 42, 43, 44, 51, 58, 59, 60, 61)));
+        index_set.push(Rc::new(hashset!(45, 46, 55, 56, 57, 66, 67, 68, 77)));
+        index_set.push(Rc::new(hashset!(54, 63, 64, 65, 72, 73, 74, 75, 76)));
+        index_set.push(Rc::new(hashset!(52, 53, 62, 69, 70, 71, 78, 79, 80)));
+
+        Game::new_with_groups([
+            Some(3), None, None, None, None, None, None, None, Some(4),
+            None, None, Some(2), None, Some(6), None, Some(1), None, None,
+            None, Some(1), None, Some(9), None, Some(8), None, Some(2), None,
+            None, None, Some(5), None, None, None, Some(6), None, None,
+            None, Some(2), None, None, None, None, None, Some(1), None,
+            None, None, Some(9), None, None, None, Some(8), None, None,
+            None, Some(8), None, Some(3), None, Some(4), None, Some(6), None,
+            None, None, Some(4), None, Some(1), None, Some(9), None, None,
+            Some(5), None, None, None, None, None, None, None, Some(7)
+        ], index_set)
     }
 
     pub fn cell(&self, x: usize, y: usize) -> CellValue {
@@ -107,8 +139,18 @@ fn build_set_of_default_groups() -> Vec<Rc<IndexSet>> {
     groups
 }
 
+fn groups_valid(groups: &Vec<Rc<IndexSet>>) -> bool {
+    let mut set = BTreeSet::<usize>::new();
+    for group in groups {
+        set.extend(group.iter());
+    }
+    set.len() == 81
+}
+
 /// Builds a reverse index of each cell to its group.
 fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexSet>>) -> [Rc<IndexSet>; 81] {
+    assert!(groups_valid(&groups));
+
     let mut group_lookup: [MaybeUninit<Rc<IndexSet>>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
     for group in groups {

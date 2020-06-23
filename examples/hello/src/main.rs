@@ -4,7 +4,7 @@ use sudoku::{GameState, Game};
 use sudoku::solver::solve;
 
 fn main() {
-    let game = GameState::new(Game::new_example());
+    let game = GameState::new(Game::new_example_nonomino());
     let visitor = AsciiPrinter::new();
 
     let solution = solve(&game);

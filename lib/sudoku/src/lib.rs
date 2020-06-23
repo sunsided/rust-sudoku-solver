@@ -1,3 +1,4 @@
+#[macro_use] mod macros;
 mod game;
 pub mod solver;
 pub mod visualization;
