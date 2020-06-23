@@ -1,11 +1,10 @@
 use std::rc::Rc;
 use visitor::prelude::*;
-use std::collections::BTreeSet;
 use crate::{Game, State, CellValue};
 use crate::game::game::IndexSet;
 
 pub struct GameState {
-    pub missing: IndexSet,
+    pub empty_cells: IndexSet,
     game: Rc<Game>,
     state: State
 }
@@ -14,13 +13,13 @@ impl GameState {
     pub fn new(game: Game) -> GameState {
         let state = game.fork_state();
         let missing = state.missing();
-        GameState { game: Rc::new(game), state, missing }
+        GameState { game: Rc::new(game), state, empty_cells: missing }
     }
 
     pub fn fork(&self) -> GameState {
         let state = self.state.fork();
         let missing = self.state.missing();
-        GameState { game: self.game.clone(), state, missing }
+        GameState { game: self.game.clone(), state, empty_cells: missing }
     }
 
     pub fn place_and_fork(&self, index: usize, value: u32) -> GameState {
@@ -29,7 +28,7 @@ impl GameState {
         let mut missing = self.state.missing();
         missing.remove(&index);
 
-        GameState { game: self.game.clone(), state, missing }
+        GameState { game: self.game.clone(), state, empty_cells: missing }
     }
 
     pub fn symbols(&self) -> &[u32; 9] {
@@ -92,8 +91,4 @@ impl AcceptVisitor<GameState> for GameState {
     fn accept<V: Visitor<GameState>>(&self, visitor: &V) -> V::Result {
         visitor.visit(self)
     }
-}
-
-fn index(x: usize, y: usize, width: usize) -> usize {
-    x + y * width
 }

@@ -17,7 +17,6 @@ pub struct Game {
     pub height: usize,
     valid_symbols: [u32; 9],
     initial_state: State,
-    groups: Vec<Rc<IndexSet>>,
     group_lookup: [Rc<IndexSet>; 81]
 }
 
@@ -30,7 +29,7 @@ impl Game {
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game { width: 9, height: 9, valid_symbols: symbols,
             initial_state: State::new(state),
-            groups, group_lookup }
+            group_lookup }
     }
 
     pub fn new_empty() -> Game {
@@ -39,7 +38,7 @@ impl Game {
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game { width: 9, height: 9, valid_symbols: symbols,
             initial_state: State::new([None; 81]),
-            groups, group_lookup }
+            group_lookup }
     }
 
     pub fn new_example() -> Game {
