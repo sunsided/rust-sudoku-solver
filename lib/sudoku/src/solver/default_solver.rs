@@ -1,5 +1,4 @@
 use std::collections::{BTreeSet, HashSet, BTreeMap};
-use std::collections::hash_map::RandomState;
 
 use crate::prelude::*;
 use crate::GameState;
@@ -28,7 +27,11 @@ pub fn solve(game: &GameState) -> GameState {
             }
 
             let next_state = state.place_and_fork(r#move.index, r#move.value);
-            if !typed_move.trivial {
+
+            // If the move is trivial, we can just replace the top of the stack;
+            // the removal part of that is already done. However, if we need to branch,
+            // we need to re-add our current state to make sure we can revisit it later.
+            if typed_move.branch {
                 stack.push(state);
             }
 
@@ -53,11 +56,6 @@ pub fn solve(game: &GameState) -> GameState {
     }
 
     best_solution
-}
-
-fn apply_trivial_moves(state: GameState, trivial_cells: Vec<(usize, u32)>) -> GameState {
-    trivial_cells.iter().fold(state, |current, (index, candidates)|
-        current.place_and_fork(*index, *candidates))
 }
 
 /// Finds the open cells and returns them in order of descending move options.
@@ -92,9 +90,9 @@ fn to_sorted_list(set: BTreeMap<Index, Vec<Move>>) -> Vec<Vec<Move>> {
 fn flatten_list(list_of_list: Vec<Vec<Move>>) -> Vec<TypedMove> {
     let mut out = Vec::new();
     for mut list in list_of_list {
-        let trivial = list.len() == 1;
+        let branch = list.len() > 1;
         while let Some(r#move) = list.pop() {
-            out.push(TypedMove::new(r#move, trivial));
+            out.push(TypedMove::new(r#move, branch));
         }
     }
     out

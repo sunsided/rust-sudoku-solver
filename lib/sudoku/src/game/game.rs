@@ -4,7 +4,6 @@
 use visitor::{Visitor, AcceptVisitor};
 use std::collections::{HashSet, BTreeSet};
 use std::vec::Vec;
-use std::collections::hash_map::RandomState;
 use std::rc::Rc;
 use std::mem::MaybeUninit;
 use crate::State;

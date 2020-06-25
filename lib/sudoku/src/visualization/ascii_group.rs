@@ -1,7 +1,5 @@
 use visitor::prelude::*;
 use crate::GameState;
-use std::collections::{BTreeSet, BTreeMap, HashSet};
-use crate::game::prelude::IndexSet;
 
 pub struct AsciiGroupPrinter {}
 
