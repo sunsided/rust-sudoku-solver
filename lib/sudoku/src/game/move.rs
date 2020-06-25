@@ -1,6 +1,11 @@
 use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
 
+pub struct MoveId {
+    pub value: Value,
+    pub index: Index
+}
+
 pub struct Move {
     pub value: Value,
     pub index: Index,
@@ -11,6 +16,10 @@ pub struct Move {
 impl Move {
     pub fn new(value: Value, index: Index, x: Coordinate, y: Coordinate) -> Move {
         Move { value, index, x, y}
+    }
+
+    pub fn id(&self) -> MoveId {
+        MoveId { value: self.value, index: self.index }
     }
 }
 

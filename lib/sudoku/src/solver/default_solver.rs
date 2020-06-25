@@ -13,16 +13,13 @@ pub fn solve(game: &GameState) -> GameState {
     stack.push(game.fork());
 
     let mut tried_moves = HashSet::new();
+    let mut best_solution = game.fork();
+    let mut best_num_empty = game.empty_cells.len();
 
     'stack: while let Some(state) = stack.pop() {
         let list_of_lists = find_move_candidates(&state, &valid_symbols);
         let candidates = flatten_list(list_of_lists);
-        println!("{} more moves to try", candidates.len());
-
-        if candidates.is_empty() {
-            stack.push(state);
-            break 'stack;
-        }
+        println!("{} more moves to try; stack depth {}", candidates.len(), stack.len());
 
         'moves: for typed_move in candidates {
             let r#move = typed_move.r#move;
@@ -43,10 +40,19 @@ pub fn solve(game: &GameState) -> GameState {
         // No possible moves were found; this branch is a dead end.
         // Since we already popped the last state from the stack,
         // the next iteration will continue at the previous branch.
+
+        let num_empty = state.empty_cells.len();
+        if num_empty < best_num_empty {
+            best_num_empty = num_empty;
+            best_solution = state.fork();
+        }
+
+        if num_empty == 0 || stack.len() == 0 {
+            break 'stack;
+        }
     }
 
-    let final_state = stack.pop();
-    final_state.unwrap()
+    best_solution
 }
 
 fn apply_trivial_moves(state: GameState, trivial_cells: Vec<(usize, u32)>) -> GameState {
