@@ -6,7 +6,7 @@ use std::collections::HashSet;
 
 pub struct GameState {
     pub empty_cells: IndexSet,
-    game: Rc<Game>,
+    pub game: Rc<Game>,
     state: State
 }
 

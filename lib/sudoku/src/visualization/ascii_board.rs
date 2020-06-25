@@ -1,15 +1,15 @@
 use visitor::prelude::*;
 use crate::GameState;
 
-pub struct AsciiPrinter {}
+pub struct AsciiBoardPrinter {}
 
-impl AsciiPrinter {
-    pub fn new() -> AsciiPrinter {
-        AsciiPrinter{}
+impl AsciiBoardPrinter {
+    pub fn new() -> AsciiBoardPrinter {
+        AsciiBoardPrinter {}
     }
 }
 
-impl Visitor<GameState> for AsciiPrinter {
+impl Visitor<GameState> for AsciiBoardPrinter {
     type Result = ();
 
     fn visit(&self, data: &GameState) -> Self::Result {

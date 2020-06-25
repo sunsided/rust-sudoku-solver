@@ -16,7 +16,7 @@ pub struct Game {
     valid_symbols: [u32; 9],
     initial_state: State,
     pub groups: Vec<Rc<IndexSet>>,
-    group_lookup: [Rc<IndexSet>; 81]
+    group_lookup: [usize; 81]
 }
 
 impl Game {
@@ -95,8 +95,13 @@ impl Game {
         self.initial_state.fork()
     }
 
+    pub fn group_id(&self, x: usize, y: usize) -> usize {
+        self.group_lookup[index(x, y, self.width)]
+    }
+
     pub fn group_at(&self, x: usize, y: usize) -> &IndexSet {
-        &self.group_lookup[index(x, y, self.width)]
+        let idx = self.group_id(x, y);
+        &self.groups[idx]
     }
 
     pub fn symbols(&self) -> &[u32; 9] {
@@ -147,18 +152,19 @@ fn groups_valid(groups: &Vec<Rc<IndexSet>>) -> bool {
 }
 
 /// Builds a reverse index of each cell to its group.
-fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexSet>>) -> [Rc<IndexSet>; 81] {
+fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexSet>>) -> [usize; 81] {
     assert!(groups_valid(&groups));
 
-    let mut group_lookup: [MaybeUninit<Rc<IndexSet>>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
+    let mut group_lookup: [MaybeUninit<usize>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
-    for group in groups {
+    for gid in 0..groups.len() {
+        let group = &groups[gid];
         for index in group.iter() {
-            group_lookup[*index] = MaybeUninit::new(group.clone());
+            group_lookup[*index] = MaybeUninit::new(gid);
         }
     }
 
-    unsafe { std::mem::transmute::<_, [Rc<IndexSet>; 81]>(group_lookup) }
+    unsafe { std::mem::transmute::<_, [usize; 81]>(group_lookup) }
 }
 
 #[cfg(test)]
@@ -218,7 +224,7 @@ mod tests {
     #[test]
     fn group_lookup_works() {
         let board = crate::Game::new(create_matrix());
-        let group = board.group_lookup[index(4, 4, 9)].clone();
+        let group = board.group_at(4, 4).clone();
 
         for y in 3..6 {
             assert!(group.contains(&index(3, y, 9)));
