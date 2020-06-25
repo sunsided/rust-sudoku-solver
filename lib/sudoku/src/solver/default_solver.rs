@@ -1,10 +1,10 @@
+use std::collections::{BTreeSet, HashSet, BTreeMap};
+use std::collections::hash_map::RandomState;
+
+use crate::prelude::*;
 use crate::GameState;
-use std::collections::BTreeSet;
-
-type Index = usize;
-type CellValuesTuple = (Index, Vec<u32>);
-type TrivialCellValuesTuple = (Index, u32);
-
+use crate::game::Move;
+use crate::solver::typed_move::TypedMove;
 
 pub fn solve(game: &GameState) -> GameState {
     let valid_symbols = collect_valid_symbols(game);
@@ -12,18 +12,37 @@ pub fn solve(game: &GameState) -> GameState {
     let mut stack = Vec::new();
     stack.push(game.fork());
 
-    while let Some(state) = stack.pop() {
-        let (trivial_cells, open_cells) = find_move_candidates(&state, &valid_symbols);
+    let mut tried_moves = HashSet::new();
 
-        // TODO: Only expand trivial moves for now.
-        if trivial_cells.is_empty() {
-            //assert!(open_cells.is_empty());
+    'stack: while let Some(state) = stack.pop() {
+        let list_of_lists = find_move_candidates(&state, &valid_symbols);
+        let candidates = flatten_list(list_of_lists);
+        println!("{} more moves to try", candidates.len());
+
+        if candidates.is_empty() {
             stack.push(state);
-            break;
+            break 'stack;
         }
 
-        let new_state = apply_trivial_moves(state, trivial_cells);
-        stack.push(new_state);
+        'moves: for typed_move in candidates {
+            let r#move = typed_move.r#move;
+            if tried_moves.contains(&r#move) {
+                continue 'moves;
+            }
+
+            let next_state = state.place_and_fork(r#move.index, r#move.value);
+            if !typed_move.trivial {
+                stack.push(state);
+            }
+
+            stack.push(next_state);
+            tried_moves.insert(r#move);
+            continue 'stack;
+        }
+
+        // No possible moves were found; this branch is a dead end.
+        // Since we already popped the last state from the stack,
+        // the next iteration will continue at the previous branch.
     }
 
     let final_state = stack.pop();
@@ -35,25 +54,47 @@ fn apply_trivial_moves(state: GameState, trivial_cells: Vec<(usize, u32)>) -> Ga
         current.place_and_fork(*index, *candidates))
 }
 
-/// Finds the open cells and returns them in order of ascending move options.
-fn find_move_candidates(state: &GameState, valid_symbols: &BTreeSet<u32>) -> (Vec<TrivialCellValuesTuple>, Vec<CellValuesTuple>) {
-    let mut trivial_cells = Vec::new();
-    let mut open_cells = Vec::new();
+/// Finds the open cells and returns them in order of descending move options.
+fn find_move_candidates(state: &GameState, valid_symbols: &BTreeSet<u32>) -> Vec<Vec<Move>> {
+    let mut open_cells = BTreeMap::new();
 
     for index in &state.empty_cells {
         let missing_values = collect_missing_values(index, state, valid_symbols);
-        match missing_values.len() {
-            1 => trivial_cells.push( (*index, *missing_values.iter().next().unwrap())),
-            _ => open_cells.push((*index, missing_values))
-        };
+
+        let (x, y) = state.index_to_xy(index.clone());
+        for value in missing_values {
+            let r#move = Move::new(value, index.clone(), x.clone(), y.clone());
+
+            open_cells.entry(index.clone()).or_insert_with(|| Vec::new()).push(r#move);
+        }
     }
 
-    // Order by possible moves, ascending.
-    open_cells.sort_unstable_by_key(|tuple| tuple.1.len());
-    (trivial_cells, open_cells)
+    // Order by possible moves, asscending.
+    to_sorted_list(open_cells)
 }
 
-fn collect_missing_values(index: &usize, state: &GameState, valid_symbols: &BTreeSet<u32>) -> Vec<u32> {
+fn to_sorted_list(set: BTreeMap<Index, Vec<Move>>) -> Vec<Vec<Move>> {
+    let mut out = Vec::new();
+    for (_, list) in set {
+        out.push(list);
+    }
+
+    out.sort_unstable_by_key(|list| list.len());
+    out
+}
+
+fn flatten_list(list_of_list: Vec<Vec<Move>>) -> Vec<TypedMove> {
+    let mut out = Vec::new();
+    for mut list in list_of_list {
+        let trivial = list.len() == 1;
+        while let Some(r#move) = list.pop() {
+            out.push(TypedMove::new(r#move, trivial));
+        }
+    }
+    out
+}
+
+fn collect_missing_values(index: &usize, state: &GameState, valid_symbols: &BTreeSet<u32>) -> Vec<Value> {
     let (x, y) = state.index_to_xy(*index);
 
     // Determine the symbols used in the context of the current cell.
@@ -66,7 +107,7 @@ fn collect_missing_values(index: &usize, state: &GameState, valid_symbols: &BTre
     valid_symbols.difference(&values).map(|x| *x).collect()
 }
 
-fn collect_valid_symbols(game: &GameState) -> BTreeSet<u32> {
+fn collect_valid_symbols(game: &GameState) -> BTreeSet<Value> {
     let mut symbols = BTreeSet::new();
     for symbol in game.symbols() {
         symbols.insert(*symbol);

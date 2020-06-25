@@ -5,6 +5,7 @@ use sudoku::solver::solve;
 
 fn main() {
     let game = GameState::new(Game::new_example_nonomino());
+    // let game = GameState::new(Game::new_example());
     let visitor = AsciiPrinter::new();
 
     let solution = solve(&game);
@@ -14,4 +15,7 @@ fn main() {
 
     println!("\nSolution:");
     solution.accept(&visitor);
+
+    let valid = solution.validate();
+    println!("\nSolution valid: {}", if valid { "yes" } else { "no" });
 }

@@ -1,7 +1,8 @@
 use std::rc::Rc;
 use visitor::prelude::*;
-use crate::{Game, State, CellValue};
-use crate::game::game::IndexSet;
+use crate::game::prelude::*;
+use crate::{Game, State};
+use std::collections::HashSet;
 
 pub struct GameState {
     pub empty_cells: IndexSet,
@@ -51,7 +52,7 @@ impl GameState {
         set
     }
 
-    pub fn get_column_values(&self, x: usize) -> Vec<u32> {
+    pub fn get_column_values(&self, x: usize) -> Vec<Value> {
         let width = self.game.width;
         let height = self.game.height;
         let mut set = Vec::new();
@@ -84,6 +85,53 @@ impl GameState {
         let x = index % self.game.width;
         let y = index / self.game.width;
         (x, y)
+    }
+
+    pub fn validate(&self) -> bool{
+        for y in 0..self.game.height {
+            if !self.validate_row(y) {
+                return false
+            }
+        }
+
+        for x in 0..self.game.width {
+            if !self.validate_column(x) {
+                return false
+            }
+        }
+
+        for group in self.game.groups.as_slice() {
+            if !self.validate_group(group) {
+                return false
+            }
+        }
+
+        true
+    }
+
+    fn validate_row(&self, y: Coordinate) -> bool{
+        let mut values = HashSet::new();
+        for item in self.get_row_values(y) {
+            values.insert(item);
+        }
+        values.len() == self.game.height
+    }
+
+    fn validate_column(&self, x: Coordinate) -> bool{
+        let mut values = HashSet::new();
+        for item in self.get_column_values(x) {
+            values.insert(item);
+        }
+        values.len() == self.game.height
+    }
+
+    fn validate_group(&self, group: &IndexSet) -> bool{
+        let mut values = HashSet::new();
+        let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
+        for item in self.get_group_values(x, y) {
+            values.insert(item);
+        }
+        values.len() == group.len()
     }
 }
 

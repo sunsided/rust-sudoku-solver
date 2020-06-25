@@ -1,6 +1,4 @@
-use crate::game::IndexSet;
-
-pub type CellValue = Option<u32>;
+use crate::game::prelude::*;
 
 pub struct State {
     state: Box<[CellValue; 81]>
@@ -43,8 +41,4 @@ impl State {
         }
         set
     }
-}
-
-pub fn index(x: usize, y: usize, width: usize) -> usize {
-    x + y * width
 }

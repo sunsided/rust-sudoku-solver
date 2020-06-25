@@ -7,16 +7,15 @@ use std::vec::Vec;
 use std::collections::hash_map::RandomState;
 use std::rc::Rc;
 use std::mem::MaybeUninit;
-use crate::{State, CellValue};
-use crate::game::index;
-
-pub type IndexSet = HashSet<usize, RandomState>;
+use crate::State;
+use crate::prelude::*;
 
 pub struct Game {
     pub width: usize,
     pub height: usize,
     valid_symbols: [u32; 9],
     initial_state: State,
+    pub groups: Vec<Rc<IndexSet>>,
     group_lookup: [Rc<IndexSet>; 81]
 }
 
@@ -28,7 +27,7 @@ impl Game {
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game { width: 9, height: 9, valid_symbols: symbols,
             initial_state: State::new(state),
-            group_lookup }
+            groups, group_lookup }
     }
 
     pub fn new_with_groups(state: [CellValue; 81], groups: Vec<Rc<IndexSet>>) -> Game {
@@ -36,7 +35,7 @@ impl Game {
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game { width: 9, height: 9, valid_symbols: symbols,
             initial_state: State::new(state),
-            group_lookup }
+            groups, group_lookup }
     }
 
     pub fn new_empty() -> Game {
@@ -45,7 +44,7 @@ impl Game {
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game { width: 9, height: 9, valid_symbols: symbols,
             initial_state: State::new([None; 81]),
-            group_lookup }
+            groups, group_lookup }
     }
 
     pub fn new_example() -> Game {
@@ -166,10 +165,10 @@ fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexSet>>) -> [Rc<IndexS
 mod tests {
     use std::mem::MaybeUninit;
     use crate::game::game::build_default_group;
-    use crate::game::state::index;
+    use crate::prelude::*;
 
-    fn create_matrix() -> [crate::CellValue; 81] {
-        let mut array: [MaybeUninit<crate::CellValue>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
+    fn create_matrix() -> [CellValue; 81] {
+        let mut array: [MaybeUninit<CellValue>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for y in 0u8..9 {
             let offset = y * 9;
@@ -182,7 +181,7 @@ mod tests {
 
         array[5 * 9 + 0] = MaybeUninit::new(None);
 
-        unsafe { std::mem::transmute::<_, [crate::CellValue; 81]>(array) }
+        unsafe { std::mem::transmute::<_, [CellValue; 81]>(array) }
     }
 
     #[test]
