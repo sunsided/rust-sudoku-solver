@@ -29,6 +29,10 @@ For reference, here's an example Nonomino from the Wikipedia [Sudoku](https://en
 
 ![](.readme/nonomino.png)
 
+The following is a solution to the above picture:
+
+![](.readme/nonomino-solution.png)
+
 ## License
 
 Copyright © 2020 Markus Mayer

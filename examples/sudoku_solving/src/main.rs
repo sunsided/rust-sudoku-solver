@@ -11,11 +11,11 @@ fn main() {
 
     let solution = solve(&game);
 
-    println!("Initial state:");
-    game.accept(&board_visitor);
-
-    println!("\nGroups:");
+    println!("Groups:");
     game.accept(&group_visitor);
+
+    println!("\nInitial state:");
+    game.accept(&board_visitor);
 
     println!("\nSolution:");
     solution.accept(&board_visitor);
