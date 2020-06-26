@@ -1,4 +1,5 @@
 use crate::game::prelude::*;
+use std::hash::{Hash, Hasher};
 
 pub struct State {
     state: Box<[CellValue; 81]>
@@ -42,3 +43,34 @@ impl State {
         set
     }
 }
+
+impl Clone for State {
+    fn clone(&self) -> Self {
+        State { state: self.state.clone() }
+    }
+}
+
+impl Hash for State {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for value in self.state.iter() {
+            (*value).hash(state);
+        }
+    }
+}
+
+impl PartialEq for State {
+    fn eq(&self, other: &Self) -> bool {
+        if self.state.len() != other.state.len() {
+            return false;
+        }
+
+        let mut equality = true;
+        for index in 0..self.state.len() {
+            equality &= self.state[index].eq(&other.state[index])
+        }
+
+        equality
+    }
+}
+
+impl Eq for State {}

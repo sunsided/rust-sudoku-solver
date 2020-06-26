@@ -3,14 +3,18 @@ use std::hash::{Hash, Hasher};
 
 pub struct Move {
     pub value: Value,
-    pub index: Index,
-    pub x: Coordinate,
-    pub y: Coordinate
+    pub index: Index
 }
 
 impl Move {
-    pub fn new(value: Value, index: Index, x: Coordinate, y: Coordinate) -> Move {
-        Move { value, index, x, y}
+    pub fn new(value: Value, index: Index) -> Move {
+        Move { value, index }
+    }
+}
+
+impl Clone for Move {
+    fn clone(&self) -> Self {
+        Move { value: self.value, index: self.index }
     }
 }
 

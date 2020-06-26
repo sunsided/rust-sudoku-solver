@@ -3,11 +3,12 @@ use visitor::prelude::*;
 use crate::game::prelude::*;
 use crate::{Game, State};
 use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 
 pub struct GameState {
     pub empty_cells: IndexSet,
     pub game: Rc<Game>,
-    state: State
+    pub state: State
 }
 
 impl GameState {
@@ -15,12 +16,6 @@ impl GameState {
         let state = game.fork_state();
         let missing = state.missing();
         GameState { game: Rc::new(game), state, empty_cells: missing }
-    }
-
-    pub fn fork(&self) -> GameState {
-        let state = self.state.fork();
-        let missing = self.state.missing();
-        GameState { game: self.game.clone(), state, empty_cells: missing }
     }
 
     pub fn place_and_fork(&self, index: usize, value: u32) -> GameState {
@@ -135,8 +130,30 @@ impl GameState {
     }
 }
 
+impl Clone for GameState {
+    fn clone(&self) -> Self {
+        let state = self.state.fork();
+        let missing = self.state.missing();
+        GameState { game: self.game.clone(), state, empty_cells: missing }
+    }
+}
+
 impl AcceptVisitor<GameState> for GameState {
     fn accept<V: Visitor<GameState>>(&self, visitor: &V) -> V::Result {
         visitor.visit(self)
     }
 }
+
+impl Hash for GameState {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.state.hash(state);
+    }
+}
+
+impl PartialEq for GameState {
+    fn eq(&self, other: &Self) -> bool {
+        self.state.eq(&other.state)
+    }
+}
+
+impl Eq for GameState {}
