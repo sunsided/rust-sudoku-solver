@@ -4,7 +4,7 @@ use crate::game::prelude::*;
 use crate::{Game, State};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
-use crate::game::Move;
+use crate::game::Placement;
 
 pub struct GameState {
     pub empty_cells: IndexSet,
@@ -19,19 +19,28 @@ impl GameState {
         GameState { game: Rc::new(game), state, empty_cells: missing }
     }
 
-    pub fn peers_by_index(&self, index: Index) -> HashSet<Move> {
+    pub fn peers_by_index(&self, index: Index) -> HashSet<Placement> {
         let (x, y) = self.index_to_xy(index);
         self.peers_by_xy(x, y)
     }
 
-    pub fn peers_by_xy(&self, x: Coordinate, y: Coordinate) -> HashSet<Move> {
+    pub fn peers_by_xy(&self, x: Coordinate, y: Coordinate) -> HashSet<Placement> {
         let column = self.get_column_values(x);
         let row = self.get_row_values(y);
         let group = self.get_group_values(x, y);
         join_hashset!(column, row, group)
     }
 
-    pub fn place_and_fork(&self, index: usize, value: u32) -> GameState {
+    pub fn apply(&mut self, index: usize, value: u32) {
+        self.state.apply(index, value);
+        self.empty_cells.remove(&index);
+    }
+
+    pub fn apply_move(&mut self, r#move: &Placement) {
+        self.apply(r#move.index, r#move.value)
+    }
+
+    pub fn apply_and_fork(&self, index: usize, value: u32) -> GameState {
         let state = self.state.apply_and_fork(index, value);
 
         let mut missing = self.state.empty_cells();
@@ -40,15 +49,15 @@ impl GameState {
         GameState { game: self.game.clone(), state, empty_cells: missing }
     }
 
-    pub fn symbols(&self) -> &[u32; 9] {
-        self.game.symbols()
+    pub fn valid_symbols(&self) -> &[u32; 9] {
+        self.game.valid_symbols()
     }
 
     pub fn cell(&self, x: usize, y: usize) -> ValueOption {
         self.state.cell_at_xy(x, y, self.game.width, self.game.height)
     }
 
-    fn get_row_values(&self, y: usize) -> Vec<Move> {
+    fn get_row_values(&self, y: usize) -> Vec<Placement> {
         let mut set = Vec::new();
         for x in 0..self.game.width {
             let index = self.xy_to_index(x, y);
@@ -57,7 +66,7 @@ impl GameState {
         set
     }
 
-    fn get_column_values(&self, x: usize) -> Vec<Move> {
+    fn get_column_values(&self, x: usize) -> Vec<Placement> {
         let mut set = Vec::new();
         for y in 0..self.game.height {
             let index = self.xy_to_index(x, y);
@@ -66,7 +75,7 @@ impl GameState {
         set
     }
 
-    fn get_group_values(&self, x: usize, y: usize) -> Vec<Move> {
+    fn get_group_values(&self, x: usize, y: usize) -> Vec<Placement> {
         let width = self.game.width;
         let height = self.game.height;
         let mut set = Vec::new();
@@ -77,9 +86,9 @@ impl GameState {
         set
     }
 
-    fn collect_if_set(&self, set: &mut Vec<Move>, index: Index) {
+    fn collect_if_set(&self, set: &mut Vec<Placement>, index: Index) {
         if let Some(value) = self.state.cell_at_index(index, self.game.width, self.game.height) {
-            set.push(Move::new(value, index));
+            set.push(Placement::new(value, index));
         }
     }
 

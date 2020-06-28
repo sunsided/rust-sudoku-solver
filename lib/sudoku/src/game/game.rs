@@ -103,7 +103,7 @@ impl Game {
         &self.groups[idx]
     }
 
-    pub fn symbols(&self) -> &[u32; 9] {
+    pub fn valid_symbols(&self) -> &[u32; 9] {
         &self.valid_symbols
     }
 }

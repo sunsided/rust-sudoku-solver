@@ -5,7 +5,7 @@ use sudoku::solver::solve;
 
 fn main() {
     let game = GameState::new(Game::new_example_nonomino());
-    // let game = GameState::new(Game::new_example());
+    let game = GameState::new(Game::new_example());
     let board_visitor = AsciiBoardPrinter::new();
     let group_visitor = AsciiGroupPrinter::new();
 
