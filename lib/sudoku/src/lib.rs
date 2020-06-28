@@ -6,6 +6,7 @@ pub mod visualization;
 pub use game::Game;
 pub use game::GameState;
 pub use game::State;
+pub use game::Placement;
 
 pub mod prelude {
     pub use crate::game::prelude::*;

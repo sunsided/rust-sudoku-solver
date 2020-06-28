@@ -69,4 +69,10 @@ impl SetOfMoveCandidates {
     }
 }
 
+impl std::ops::Index<Index> for SetOfMoveCandidates {
+    type Output = HashSet<Placement>;
 
+    fn index(&self, index: Index) -> &Self::Output {
+        &self.moves[&index]
+    }
+}

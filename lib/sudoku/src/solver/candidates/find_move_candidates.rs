@@ -22,7 +22,7 @@ pub fn find_move_candidates(state: &GameState, valid_symbols: &HashSet<Value>) -
 }
 
 fn collect_missing_values(index: Index, state: &GameState, valid_symbols: &HashSet<Value>) -> HashSet<Value> {
-    let cell_values = state.peers_by_index(index);
+    let cell_values = state.peers_by_index(index, false);
     let value_set = to_value_set(cell_values);
     valid_symbols.difference(&value_set).map(move |x| *x).collect()
 }

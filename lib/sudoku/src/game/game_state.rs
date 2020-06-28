@@ -5,6 +5,7 @@ use crate::{Game, State};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use crate::game::Placement;
+use std::process::exit;
 
 pub struct GameState {
     pub empty_cells: IndexSet,
@@ -19,15 +20,15 @@ impl GameState {
         GameState { game: Rc::new(game), state, empty_cells: missing }
     }
 
-    pub fn peers_by_index(&self, index: Index) -> HashSet<Placement> {
+    pub fn peers_by_index(&self, index: Index, exclude_self: bool) -> HashSet<Placement> {
         let (x, y) = self.index_to_xy(index);
-        self.peers_by_xy(x, y)
+        self.peers_by_xy(x, y, exclude_self)
     }
 
-    pub fn peers_by_xy(&self, x: Coordinate, y: Coordinate) -> HashSet<Placement> {
-        let column = self.get_column_values(x);
-        let row = self.get_row_values(y);
-        let group = self.get_group_values(x, y);
+    pub fn peers_by_xy(&self, x: Coordinate, y: Coordinate, exclude_self: bool) -> HashSet<Placement> {
+        let column = self.get_column_values(x, y, exclude_self);
+        let row = self.get_row_values(x, y, exclude_self);
+        let group = self.get_group_values(x, y, exclude_self);
         join_hashset!(column, row, group)
     }
 
@@ -57,30 +58,42 @@ impl GameState {
         self.state.cell_at_xy(x, y, self.game.width, self.game.height)
     }
 
-    fn get_row_values(&self, y: usize) -> Vec<Placement> {
+    fn get_row_values(&self, x_reference: Coordinate, y: Coordinate, exclude_self: bool) -> Vec<Placement> {
         let mut set = Vec::new();
         for x in 0..self.game.width {
+            if exclude_self && (x == x_reference) {
+                continue;
+            }
+
             let index = self.xy_to_index(x, y);
             self.collect_if_set(&mut set, index);
         }
         set
     }
 
-    fn get_column_values(&self, x: usize) -> Vec<Placement> {
+    fn get_column_values(&self, x: Coordinate, y_reference: Coordinate, exclude_self: bool) -> Vec<Placement> {
         let mut set = Vec::new();
         for y in 0..self.game.height {
+            if exclude_self && (y == y_reference) {
+                continue;
+            }
+
             let index = self.xy_to_index(x, y);
             self.collect_if_set(&mut set, index);
         }
         set
     }
 
-    fn get_group_values(&self, x: usize, y: usize) -> Vec<Placement> {
-        let width = self.game.width;
-        let height = self.game.height;
+    fn get_group_values(&self, x: Coordinate, y: Coordinate, exclude_self: bool) -> Vec<Placement> {
         let mut set = Vec::new();
         let group = &self.game.group_at(x, y);
+        let index_reference = self.xy_to_index(x, y);
+
         for index in group.iter() {
+            if exclude_self && (*index == index_reference) {
+                continue;
+            }
+
             self.collect_if_set(&mut set, *index);
         }
         set
@@ -121,7 +134,7 @@ impl GameState {
 
     fn validate_row(&self, y: Coordinate) -> bool{
         let mut values = HashSet::new();
-        for item in self.get_row_values(y) {
+        for item in self.get_row_values(0, y, false) {
             values.insert(item);
         }
         values.len() == self.game.height
@@ -129,7 +142,7 @@ impl GameState {
 
     fn validate_column(&self, x: Coordinate) -> bool{
         let mut values = HashSet::new();
-        for item in self.get_column_values(x) {
+        for item in self.get_column_values(x, 0, false) {
             values.insert(item);
         }
         values.len() == self.game.width
@@ -138,7 +151,7 @@ impl GameState {
     fn validate_group(&self, group: &IndexSet) -> bool{
         let mut values = HashSet::new();
         let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
-        for item in self.get_group_values(x, y) {
+        for item in self.get_group_values(x, y, false) {
             values.insert(item);
         }
         values.len() == group.len()
