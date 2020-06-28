@@ -20,7 +20,9 @@ pub fn solve(game: &GameState) -> GameState {
             return state;
         }
 
-        simple_moves(&mut state, &mut candidates);
+        let applied = simple_moves(&mut state, &candidates);
+        assert!(applied.len() > 0);
+        candidates.eliminate_many(applied.into_iter());
 
         stack.push(state);
     }

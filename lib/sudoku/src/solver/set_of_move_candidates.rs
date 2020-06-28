@@ -51,6 +51,13 @@ impl SetOfMoveCandidates {
             .and_modify(move |x| { x.remove(candidate); });
     }
 
+    pub fn eliminate_many<I>(&mut self, candidates: I)
+        where I: Iterator<Item=Placement> {
+        for r#move in candidates {
+            self.eliminate(&r#move);
+        }
+    }
+
     pub fn iter<'a>(&'a self) -> impl Iterator<Item=MoveCandidates> + 'a {
         self.moves.iter().map(|(key, value)| {
             MoveCandidates::from_iter(key.clone(), value.iter().map(|x| x.clone()))
