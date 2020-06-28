@@ -3,9 +3,8 @@ use std::collections::{HashSet, BTreeMap, HashMap};
 use crate::prelude::*;
 use crate::GameState;
 use crate::game::Placement;
-use crate::solver::move_candidates::MoveCandidates;
-use crate::solver::find_move_candidates::find_move_candidates;
-use crate::solver::simple_moves::simple_moves;
+use crate::solver::candidates::{find_move_candidates, MoveCandidates};
+use crate::solver::steps::simple_moves;
 
 pub fn solve(game: &GameState) -> GameState {
     let valid_symbols = collect_valid_symbols(game);

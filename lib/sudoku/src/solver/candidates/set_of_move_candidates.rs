@@ -1,8 +1,8 @@
-use crate::prelude::Index;
-use crate::game::Placement;
 use std::collections::{HashMap, HashSet};
-use crate::solver::move_candidates::MoveCandidates;
 use std::collections::hash_map::RandomState;
+use crate::prelude::*;
+use crate::game::Placement;
+use crate::solver::candidates::MoveCandidates;
 
 #[derive(Debug, Clone)]
 pub struct SetOfMoveCandidates {

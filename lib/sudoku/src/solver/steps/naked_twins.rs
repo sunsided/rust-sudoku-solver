@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use crate::GameState;
 
-fn naked_twins(state: GameState) {
+pub(crate) fn naked_twins(state: GameState) {
 
 }

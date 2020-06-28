@@ -1,10 +1,10 @@
 use std::collections::{HashSet, BTreeMap};
+use std::iter::FromIterator;
 use crate::prelude::*;
 use crate::GameState;
 use crate::game::Placement;
-use crate::solver::move_candidates::MoveCandidates;
-use crate::solver::set_of_move_candidates::SetOfMoveCandidates;
-use std::iter::FromIterator;
+use crate::solver::candidates::{MoveCandidates, SetOfMoveCandidates};
+
 
 /// Finds the open cells and returns them in order of descending move options.
 pub fn find_move_candidates(state: &GameState, valid_symbols: &HashSet<Value>) -> SetOfMoveCandidates {

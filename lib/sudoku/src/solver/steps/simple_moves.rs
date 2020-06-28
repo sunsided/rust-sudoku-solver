@@ -1,9 +1,9 @@
+use std::collections::HashSet;
 use crate::prelude::*;
 use crate::GameState;
-use std::collections::HashSet;
-use crate::solver::move_candidates::MoveCandidates;
-use crate::solver::set_of_move_candidates::SetOfMoveCandidates;
 use crate::game::Placement;
+use crate::solver::candidates::SetOfMoveCandidates;
+
 
 pub fn simple_moves(state: &mut GameState, candidates: &SetOfMoveCandidates) -> Vec<Placement> {
     let mut applied = Vec::new();
