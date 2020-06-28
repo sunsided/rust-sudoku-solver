@@ -20,7 +20,7 @@ pub struct Game {
 
 impl Game {
     /// Initializes a standard Sudoku board from values in row-major order.
-    pub fn new(state: [CellValue; 81]) -> Game {
+    pub fn new(state: [ValueOption; 81]) -> Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
@@ -29,7 +29,7 @@ impl Game {
             groups, group_lookup }
     }
 
-    pub fn new_with_groups(state: [CellValue; 81], groups: Vec<Rc<IndexSet>>) -> Game {
+    pub fn new_with_groups(state: [ValueOption; 81], groups: Vec<Rc<IndexSet>>) -> Game {
         let symbols = build_default_symbols();
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game { width: 9, height: 9, valid_symbols: symbols,
@@ -86,12 +86,12 @@ impl Game {
         ], index_set)
     }
 
-    pub fn cell(&self, x: usize, y: usize) -> CellValue {
-        self.initial_state.cell(x, y, self.width, self.height)
+    pub fn cell(&self, x: usize, y: usize) -> ValueOption {
+        self.initial_state.cell_at_xy(x, y, self.width, self.height)
     }
 
     pub fn fork_state(&self) -> State {
-        self.initial_state.fork()
+        self.initial_state.clone()
     }
 
     pub fn group_id(&self, x: usize, y: usize) -> usize {
@@ -172,8 +172,8 @@ mod tests {
     use crate::game::game::build_default_group;
     use crate::prelude::*;
 
-    fn create_matrix() -> [CellValue; 81] {
-        let mut array: [MaybeUninit<CellValue>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
+    fn create_matrix() -> [ValueOption; 81] {
+        let mut array: [MaybeUninit<ValueOption>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for y in 0u8..9 {
             let offset = y * 9;
@@ -186,7 +186,7 @@ mod tests {
 
         array[5 * 9 + 0] = MaybeUninit::new(None);
 
-        unsafe { std::mem::transmute::<_, [CellValue; 81]>(array) }
+        unsafe { std::mem::transmute::<_, [ValueOption; 81]>(array) }
     }
 
     #[test]

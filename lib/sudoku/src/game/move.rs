@@ -1,6 +1,7 @@
 use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
 
+#[derive(Debug)]
 pub struct Move {
     pub value: Value,
     pub index: Index

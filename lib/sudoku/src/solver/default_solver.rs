@@ -4,8 +4,9 @@ use crate::prelude::*;
 use crate::GameState;
 use crate::game::Move;
 use crate::solver::typed_move::TypedMove;
+use std::iter::FromIterator;
 
-fn expand_moves(state: &GameState, valid_symbols: &BTreeSet<Value>) -> Vec<TypedMove> {
+fn expand_moves(state: &GameState, valid_symbols: &HashSet<Value>) -> Vec<TypedMove> {
     let list_of_lists = find_move_candidates(&state, &valid_symbols);
     flatten_list(list_of_lists)
 }
@@ -53,7 +54,7 @@ pub fn solve(game: &GameState) -> GameState {
             // If the move is trivial, we can just replace the top of the stack;
             // the removal part of that is already done. However, if we need to branch,
             // we need to re-add our current state to make sure we can revisit it later.
-            if typed_move.branch && candidates.len() > 0 {
+            if typed_move.is_branching && candidates.len() > 0 {
                 stack.push(state);
             }
             else {
@@ -83,11 +84,11 @@ pub fn solve(game: &GameState) -> GameState {
 }
 
 /// Finds the open cells and returns them in order of descending move options.
-fn find_move_candidates(state: &GameState, valid_symbols: &BTreeSet<u32>) -> Vec<Vec<Move>> {
+fn find_move_candidates(state: &GameState, valid_symbols: &HashSet<u32>) -> Vec<Vec<Move>> {
     let mut open_cells = BTreeMap::new();
 
     for index in &state.empty_cells {
-        let missing_values = collect_missing_values(index, state, valid_symbols);
+        let missing_values = collect_missing_values(*index, state, valid_symbols);
         for value in missing_values {
             let r#move = Move::new(value, index.clone());
 
@@ -120,24 +121,32 @@ fn flatten_list(list_of_list: Vec<Vec<Move>>) -> Vec<TypedMove> {
     out
 }
 
-fn collect_missing_values(index: &usize, state: &GameState, valid_symbols: &BTreeSet<u32>) -> Vec<Value> {
-    let (x, y) = state.index_to_xy(*index);
-
-    // Determine the symbols used in the context of the current cell.
-    let column = state.get_column_values(x);
-    let row = state.get_row_values(y);
-    let group = state.get_group_values(x, y);
-
-    // Determine the remaining possible moves for the current cell.
-    let values = join_btreeset!(column, row, group);
-    valid_symbols.difference(&values).map(|x| *x).collect()
+fn collect_missing_values(index: Index, state: &GameState, valid_symbols: &HashSet<u32>) -> HashSet<Value> {
+    let cell_values = state.peers_by_index(index);
+    let value_set = to_value_set(cell_values);
+    valid_symbols.difference(&value_set).map(move |x| *x).collect()
 }
 
-fn collect_valid_symbols(game: &GameState) -> BTreeSet<Value> {
-    let mut symbols = BTreeSet::new();
+fn collect_valid_symbols(game: &GameState) -> HashSet<Value> {
+    let mut symbols = HashSet::new();
     for symbol in game.symbols() {
         symbols.insert(*symbol);
     }
     symbols
 }
 
+fn to_value_set(set: HashSet<Move>) -> HashSet<Value> {
+    let mut vec = HashSet::new();
+    for value in set.into_iter() {
+        vec.insert(value.value);
+    }
+    vec
+}
+
+fn to_value_vec(set: HashSet<Move>) -> Vec<Value> {
+    let mut vec = Vec::new();
+    for value in set.into_iter() {
+        vec.push(value.value);
+    }
+    vec
+}

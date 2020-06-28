@@ -2,41 +2,39 @@ use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
 
 pub struct State {
-    state: Box<[CellValue; 81]>
+    values: [ValueOption; 81]
 }
 
 impl State {
     /// Initializes a standard Sudoku board from values in row-major order.
-    pub fn new(state: [CellValue; 81]) -> State {
-        State { state: Box::new(state) }
+    pub fn new(values: [ValueOption; 81]) -> State {
+        State { values }
     }
 
-    pub fn cell(&self, x: usize, y: usize, width: usize, height: usize) -> CellValue {
+    pub fn cell_at_xy(&self, x: usize, y: usize, width: usize, height: usize) -> ValueOption {
         assert!(x < width && y < height);
-        self.state[index(x, y, width)]
+        self.values[index(x, y, width)]
     }
 
-    pub fn cell_at(&self, index: usize, width: usize, height: usize) -> CellValue {
+    pub fn cell_at_index(&self, index: usize, width: usize, height: usize) -> ValueOption {
         assert!(index < width * height);
-        self.state[index]
+        self.values[index]
     }
 
-    pub fn fork(&self) -> State {
-        State { state: Box::new((*self.state).clone()) }
+    pub fn apply(&mut self, index: usize, value: u32) {
+        self.values[index] = Some(value);
     }
 
-    pub fn place_and_fork(&self, index: usize, value: u32) -> State {
-        let mut state = (*self.state).clone();
+    pub fn apply_and_fork(&self, index: usize, value: u32) -> State {
+        let mut state = self.values.clone();
         state[index] = Some(value);
-
-        State { state: Box::new(state) }
+        State { values: state }
     }
 
-    pub fn missing(&self) -> IndexSet {
+    pub fn empty_cells(&self) -> IndexSet {
         let mut set = IndexSet::new();
-        for index in 0..self.state.len() {
-            let cell = &self.state[index];
-            if cell.is_none() {
+        for index in 0..self.values.len() {
+            if self.values[index].is_none() {
                 set.insert(index);
             }
         }
@@ -46,27 +44,29 @@ impl State {
 
 impl Clone for State {
     fn clone(&self) -> Self {
-        State { state: self.state.clone() }
+        State { values: self.values.clone() }
     }
 }
 
 impl Hash for State {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        for value in self.state.iter() {
-            (*value).hash(state);
+        let values = &self.values;
+        for i in 0..values.len() {
+            values[i].hash(state);
         }
     }
 }
 
 impl PartialEq for State {
     fn eq(&self, other: &Self) -> bool {
-        if self.state.len() != other.state.len() {
+        let values = &self.values;
+        if values.len() != other.values.len() {
             return false;
         }
 
         let mut equality = true;
-        for index in 0..self.state.len() {
-            equality &= self.state[index].eq(&other.state[index])
+        for index in 0..values.len() {
+            equality &= values[index].eq(&other.values[index])
         }
 
         equality
