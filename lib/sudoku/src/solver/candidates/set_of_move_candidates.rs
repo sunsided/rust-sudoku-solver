@@ -29,17 +29,24 @@ impl SetOfMoveCandidates {
         self.len() == 0
     }
 
-    pub fn add_candidate(&mut self, candidate: Placement) {
+    pub fn add(&mut self, candidate: Placement) {
         self.moves.entry(candidate.index)
             .or_insert_with(HashSet::new)
             .insert(candidate);
     }
 
-    pub fn remove_candidate(&mut self, index: Index) -> Option<HashSet<Placement, RandomState>> {
+    pub fn add_many<I>(&mut self, candidates: I)
+        where I: Iterator<Item=Placement> {
+        for c in candidates {
+            self.add(c);
+        }
+    }
+
+    pub fn remove(&mut self, index: Index) -> Option<HashSet<Placement, RandomState>> {
         self.moves.remove(&index)
     }
 
-    pub fn remove_candidates<I>(&mut self, indexes: I) -> ()
+    pub fn remove_many<I>(&mut self, indexes: I) -> ()
         where I: Iterator<Item=Index> {
         for index in indexes {
             self.moves.remove(&index);
@@ -49,6 +56,10 @@ impl SetOfMoveCandidates {
     pub fn eliminate(&mut self, candidate: &Placement) {
         self.moves.entry(candidate.index)
             .and_modify(move |x| { x.remove(candidate); });
+
+        if self.moves[&candidate.index].is_empty() {
+            self.moves.remove(&candidate.index);
+        }
     }
 
     pub fn eliminate_many<I>(&mut self, candidates: I)

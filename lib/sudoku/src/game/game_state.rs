@@ -7,6 +7,12 @@ use std::hash::{Hash, Hasher};
 use crate::game::Placement;
 use std::process::exit;
 
+pub enum CollectType {
+    All,
+    Empty,
+    Filled
+}
+
 pub struct GameState {
     pub empty_cells: IndexSet,
     pub game: Rc<Game>,
@@ -25,10 +31,22 @@ impl GameState {
         self.peers_by_xy(x, y, exclude_self)
     }
 
+    pub fn peer_indexes_by_index(&self, index: Index, exclude_self: bool, how: CollectType) -> HashSet<Index> {
+        let (x, y) = self.index_to_xy(index);
+        self.peer_indexes_by_xy(x, y, exclude_self, how)
+    }
+
     pub fn peers_by_xy(&self, x: Coordinate, y: Coordinate, exclude_self: bool) -> HashSet<Placement> {
         let column = self.get_column_values(x, y, exclude_self);
         let row = self.get_row_values(x, y, exclude_self);
         let group = self.get_group_values(x, y, exclude_self);
+        join_hashset!(column, row, group)
+    }
+
+    pub fn peer_indexes_by_xy(&self, x: Coordinate, y: Coordinate, exclude_self: bool, how: CollectType) -> HashSet<Index> {
+        let column = self.get_column_indexes(x, y, exclude_self, &how);
+        let row = self.get_row_indexes(x, y, exclude_self, &how);
+        let group = self.get_group_indexes(x, y, exclude_self, &how);
         join_hashset!(column, row, group)
     }
 
@@ -71,6 +89,19 @@ impl GameState {
         set
     }
 
+    fn get_row_indexes(&self, x_reference: Coordinate, y: Coordinate, exclude_self: bool, how: &CollectType) -> Vec<Index> {
+        let mut set = Vec::new();
+        for x in 0..self.game.width {
+            if exclude_self && (x == x_reference) {
+                continue;
+            }
+
+            let index = self.xy_to_index(x, y);
+            self.collect_index_if(&mut set, index, &how);
+        }
+        set
+    }
+
     fn get_column_values(&self, x: Coordinate, y_reference: Coordinate, exclude_self: bool) -> Vec<Placement> {
         let mut set = Vec::new();
         for y in 0..self.game.height {
@@ -80,6 +111,19 @@ impl GameState {
 
             let index = self.xy_to_index(x, y);
             self.collect_if_set(&mut set, index);
+        }
+        set
+    }
+
+    fn get_column_indexes(&self, x: Coordinate, y_reference: Coordinate, exclude_self: bool, how: &CollectType) -> Vec<Index> {
+        let mut set = Vec::new();
+        for y in 0..self.game.height {
+            if exclude_self && (y == y_reference) {
+                continue;
+            }
+
+            let index = self.xy_to_index(x, y);
+            self.collect_index_if(&mut set, index, &how);
         }
         set
     }
@@ -99,9 +143,45 @@ impl GameState {
         set
     }
 
+    fn get_group_indexes(&self, x: Coordinate, y: Coordinate, exclude_self: bool, how: &CollectType) -> Vec<Index> {
+        let mut set = Vec::new();
+        let group = &self.game.group_at(x, y);
+        let index_reference = self.xy_to_index(x, y);
+
+        for index in group.iter() {
+            if exclude_self && (*index == index_reference) {
+                continue;
+            }
+
+            self.collect_index_if(&mut set, *index, &how);
+        }
+        set
+    }
+
+    fn cell_at_index(&self, index: Index) -> ValueOption {
+        self.state.cell_at_index(index, self.game.width, self.game.height)
+    }
+
     fn collect_if_set(&self, set: &mut Vec<Placement>, index: Index) {
-        if let Some(value) = self.state.cell_at_index(index, self.game.width, self.game.height) {
+        if let Some(value) = self.cell_at_index(index) {
             set.push(Placement::new(value, index));
+        }
+    }
+
+    fn collect_index_if(&self, set: &mut Vec<Index>, index: Index, condition: &CollectType) {
+        let cell = self.cell_at_index(index);
+        match condition {
+            CollectType::All => set.push(index),
+            CollectType::Empty => {
+                if cell.is_none() {
+                    set.push(index);
+                }
+            },
+            CollectType::Filled => {
+                if cell.is_some() {
+                    set.push(index);
+                }
+            }
         }
     }
 

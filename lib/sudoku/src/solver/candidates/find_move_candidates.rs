@@ -14,7 +14,7 @@ pub fn find_move_candidates(state: &GameState, valid_symbols: &HashSet<Value>) -
         let missing_values = collect_missing_values(*index, state, valid_symbols);
         for value in missing_values {
             let r#move = Placement::new(value, index.clone());
-            candidates.add_candidate(r#move);
+            candidates.add(r#move);
         }
     }
 

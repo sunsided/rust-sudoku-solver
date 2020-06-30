@@ -5,7 +5,7 @@ use crate::game::Placement;
 use crate::solver::candidates::SetOfMoveCandidates;
 
 
-pub fn simple_moves(state: &mut GameState, candidates: &SetOfMoveCandidates) -> Vec<Placement> {
+pub fn lone_singles(state: &mut GameState, candidates: &SetOfMoveCandidates) -> Vec<Placement> {
     let mut applied = Vec::new();
 
     for candidate in candidates.iter() {

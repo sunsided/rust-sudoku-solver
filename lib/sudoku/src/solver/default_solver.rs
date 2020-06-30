@@ -4,7 +4,7 @@ use crate::prelude::*;
 use crate::GameState;
 use crate::game::Placement;
 use crate::solver::candidates::{find_move_candidates, MoveCandidates};
-use crate::solver::steps::simple_moves;
+use crate::solver::steps::{lone_singles, naked_twins, hidden_singles};
 
 pub fn solve(game: &GameState) -> GameState {
     let valid_symbols = collect_valid_symbols(game);
@@ -19,9 +19,20 @@ pub fn solve(game: &GameState) -> GameState {
             return state;
         }
 
-        let applied = simple_moves(&mut state, &candidates);
-        assert!(applied.len() > 0);
+        let mut state_changed = false;
+
+        let applied = lone_singles(&mut state, &candidates);
+        state_changed |= !applied.is_empty();
         candidates.eliminate_many(applied.into_iter());
+
+        let applied = hidden_singles(&mut state, &candidates);
+        state_changed |= !applied.is_empty();
+        candidates.eliminate_many(applied.into_iter());
+
+        state_changed |= naked_twins(&mut state, &mut candidates);
+
+        // TODO: If the state didn't change, we need to fork.
+        assert!(state_changed);
 
         stack.push(state);
     }
