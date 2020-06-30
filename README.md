@@ -1,6 +1,6 @@
 # A Sudoku Solver in Rust
 
-This project is an attempt to familiarize myself with Rust in terms of both the
+This project is an attempt at familiarizing myself with Rust in terms of both the
 language itself, patterns and workspaces. To do something at least remotely meaningful,
 it implements a Sudoku solver.
 
