@@ -217,24 +217,24 @@ impl GameState {
     fn validate_row(&self, y: Coordinate) -> bool{
         let mut values = HashSet::new();
         for item in self.get_row_values(0, y, false) {
-            values.insert(item);
+            values.insert(item.value);
         }
-        values.len() == self.game.height
+        values.len() == self.game.width
     }
 
     fn validate_column(&self, x: Coordinate) -> bool{
         let mut values = HashSet::new();
         for item in self.get_column_values(x, 0, false) {
-            values.insert(item);
+            values.insert(item.value);
         }
-        values.len() == self.game.width
+        values.len() == self.game.height
     }
 
     fn validate_group(&self, group: &IndexSet) -> bool{
         let mut values = HashSet::new();
         let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
         for item in self.get_group_values(x, y, false) {
-            values.insert(item);
+            values.insert(item.value);
         }
         values.len() == group.len()
     }
