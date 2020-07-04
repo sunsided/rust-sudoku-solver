@@ -8,6 +8,10 @@ pub fn naked_twins(state: &mut GameState, candidates: &mut SetOfMoveCandidates) 
     for candidate in candidates.iter() {
         let peer_indexes = state.peer_indexes_by_index(candidate.index, true, CollectType::Empty);
         for index in peer_indexes {
+            // If no suggestion exists for the peer field, the current branch is unsolvable.
+            // We assume that this is known beforehand.
+            assert!(candidates.contains_key(&index));
+
             let peers = &candidates[index];
 
             // A naked twin condition only occurs if any of the peers has the

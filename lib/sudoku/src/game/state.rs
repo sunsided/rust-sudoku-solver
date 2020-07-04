@@ -1,14 +1,18 @@
 use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
+use std::ops::Add;
 
 pub struct State {
+    pub id: String,
     values: [ValueOption; 81]
 }
 
 impl State {
     /// Initializes a standard Sudoku board from values in row-major order.
-    pub fn new(values: [ValueOption; 81]) -> State {
-        State { values }
+    pub fn new(values: [ValueOption; 81]) -> State
+    {
+        let id = Self::make_id(&values);
+        State { values, id }
     }
 
     pub fn cell_at_xy(&self, x: usize, y: usize, width: usize, height: usize) -> ValueOption {
@@ -28,7 +32,8 @@ impl State {
     pub fn apply_and_fork(&self, index: usize, value: u32) -> State {
         let mut state = self.values.clone();
         state[index] = Some(value);
-        State { values: state }
+        let id = Self::make_id(&self.values);
+        State { values: state, id }
     }
 
     pub fn empty_cells(&self) -> IndexSet {
@@ -40,11 +45,20 @@ impl State {
         }
         set
     }
+
+    fn make_id(values: &[ValueOption]) -> String {
+        let mut str = String::new();
+        for value in values.iter() {
+            let value_unwrapped = if value.is_some() { value.unwrap() + 1 } else { 0 };
+            str += format!("{}.", value_unwrapped).as_str();
+        }
+        str
+    }
 }
 
 impl Clone for State {
     fn clone(&self) -> Self {
-        State { values: self.values.clone() }
+        State { values: self.values.clone(), id: self.id.clone() }
     }
 }
 

@@ -76,6 +76,8 @@ impl GameState {
         self.state.cell_at_xy(x, y, self.game.width, self.game.height)
     }
 
+    pub fn id(&self) -> &String { &self.state.id }
+
     fn get_row_values(&self, x_reference: Coordinate, y: Coordinate, exclude_self: bool) -> Vec<Placement> {
         let mut set = Vec::new();
         for x in 0..self.game.width {

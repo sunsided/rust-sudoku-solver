@@ -75,8 +75,18 @@ impl SetOfMoveCandidates {
         })
     }
 
+    pub fn into_iter(self) -> impl Iterator<Item=MoveCandidates> {
+        self.moves.into_iter().map(|(key, value)| {
+            MoveCandidates::from_iter(key, value.into_iter())
+        })
+    }
+
     pub fn trim(&mut self) {
         self.moves.retain(|_, value| value.len() > 0);
+    }
+
+    pub fn contains_key(&self, index: &Index) -> bool {
+        self.moves.contains_key(index)
     }
 }
 
