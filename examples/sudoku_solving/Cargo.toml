@@ -9,3 +9,5 @@ edition = "2018"
 [dependencies]
 sudoku = { path = "../../lib/sudoku" }
 visitor = { path = "../../lib/visitor" }
+log = "0.4.8"
+env_logger = "0.7.1"

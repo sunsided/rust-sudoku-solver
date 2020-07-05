@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 visitor = { path = "../visitor" }
+log = "0.4.8"
 

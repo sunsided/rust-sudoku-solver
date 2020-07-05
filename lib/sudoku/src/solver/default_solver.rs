@@ -1,4 +1,5 @@
 use std::collections::{HashSet, BTreeMap, HashMap};
+use log::debug;
 
 use crate::prelude::*;
 use crate::GameState;
@@ -18,8 +19,7 @@ pub fn solve(game: &GameState) -> GameState {
     let mut tried_moves = HashSet::new();
 
     'stack: while let Some((mut state, mut candidates)) = stack.pop() {
-        println!("Stack depth: {}", stack.len());
-        assert!(state.validate(true));
+        debug!("Stack depth: {}", stack.len());
 
         if candidates.is_empty() {
             return state;
@@ -33,7 +33,7 @@ pub fn solve(game: &GameState) -> GameState {
         while applied_some {
             applied_some = false;
 
-            println!("  - {} candidates remaining", candidates.total_len());
+            debug!("  - {} candidates remaining", candidates.total_len());
 
             // Apply lone singles strategy.
             if let Ok(applied) = apply_lone_singles(&mut state, &mut candidates) {
@@ -90,11 +90,11 @@ pub fn solve(game: &GameState) -> GameState {
                 // branch if it still contains options.
                 candidates.remove_candidate(&candidate);
                 if !candidates.is_empty() {
-                    println!("  + Pushing base branch");
+                    debug!("  + Pushing base branch");
                     stack.push((state, candidates));
                 }
 
-                println!("  + branching; {} candidates to explore", branch_candidates.total_len());
+                debug!("  + branching; {} candidates to explore", branch_candidates.total_len());
                 stack.push((branch, branch_candidates));
                 continue 'stack;
             }
@@ -117,11 +117,11 @@ fn apply_lone_singles(mut state: &mut GameState, mut candidates: &mut SetOfMoveC
         let applied = lone_singles(&mut state, &candidates);
         if !applied.is_empty() {
             eliminate_many(&state, &mut candidates, applied.into_iter());
-            println!("  - Applying lone single strategy; candidates left: {}.", candidates.total_len());
+            debug!("  - Applying lone single strategy; candidates left: {}.", candidates.total_len());
 
             // If an invalid move was made here or the board isn't solvable, leave this branch.
             if !state.validate(true) {
-                println!("  ! Branch is invalid.");
+                debug!("  ! Branch is invalid.");
                 return Err(false);
             }
 
@@ -139,11 +139,11 @@ fn apply_hidden_singles(mut state: &mut GameState, mut candidates: &mut SetOfMov
         let applied = hidden_singles(&mut state, &candidates);
         if !applied.is_empty() {
             eliminate_many(&state, &mut candidates, applied.into_iter());
-            println!("  - Applying hidden single strategy; candidates left: {}.", candidates.total_len());
+            debug!("  - Applying hidden single strategy; candidates left: {}.", candidates.total_len());
 
             // If an invalid move was made here or the board isn't solvable, leave this branch.
             if !state.validate(true) {
-                println!("  ! Branch is invalid.");
+                debug!("  ! Branch is invalid.");
                 return Err(false);
             }
 
