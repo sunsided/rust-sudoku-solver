@@ -8,8 +8,10 @@ fn main() {
     // Enable logging with RUST_LOG=debug
     env_logger::init();
 
-    let game = GameState::new(Game::new_example_nonomino());
     // let game = GameState::new(Game::new_example());
+    let game = GameState::new(Game::new_example_nonomino());
+    // let game = GameState::new(Game::new_example_hypersudoku());
+
     let board_visitor = AsciiBoardPrinter::new();
     let group_visitor = AsciiGroupPrinter::new();
 

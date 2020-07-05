@@ -64,7 +64,7 @@ pub fn solve(game: &GameState) -> GameState {
         sorted_candidates.sort_by_key(|v| v.moves.len());
 
         for candidate_set in sorted_candidates {
-            for candidate in candidate_set.moves {
+            'candidates: for candidate in candidate_set.moves {
                 let key = (state.id().clone(), candidate.clone());
                 assert!(!tried_moves.contains(&key));
 
@@ -72,8 +72,6 @@ pub fn solve(game: &GameState) -> GameState {
 
                 let branch = state.apply_and_fork(candidate.index, candidate.value);
                 let branch_candidates = find_move_candidates(&branch, &valid_symbols);
-
-                assert!(branch.validate(true));
 
                 // We remove (not eliminate!) the candidate we just tried and requeue the current
                 // branch if it still contains options.

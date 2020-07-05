@@ -86,6 +86,39 @@ impl Game {
         ], index_set)
     }
 
+    pub fn new_example_hypersudoku() -> Game {
+        let mut index_set = Vec::new();
+
+        // Regular grid.
+        index_set.push(Rc::new(hashset!(0, 1, 2, 9, 10, 11, 18, 19, 20)));
+        index_set.push(Rc::new(hashset!(3, 4, 5, 12, 13, 14, 21, 22, 23)));
+        index_set.push(Rc::new(hashset!(6, 7, 8, 15, 16, 17, 24, 25, 26)));
+        index_set.push(Rc::new(hashset!(27, 28, 29, 36, 37, 38, 45, 46, 47)));
+        index_set.push(Rc::new(hashset!(30, 31, 32, 39, 40, 41, 48, 49, 50)));
+        index_set.push(Rc::new(hashset!(33, 34, 35, 42, 43, 44, 51, 52, 53)));
+        index_set.push(Rc::new(hashset!(54, 55, 56, 63, 64, 65, 72, 73, 74)));
+        index_set.push(Rc::new(hashset!(57, 58, 59, 66, 67, 68, 75, 76, 77)));
+        index_set.push(Rc::new(hashset!(60, 61, 62, 69, 70, 71, 78, 79, 80)));
+
+        // Windows
+        index_set.push(Rc::new(hashset!(10, 11, 12, 19, 20, 21, 28, 29, 30)));
+        index_set.push(Rc::new(hashset!(14, 15, 16, 23, 24, 25, 32, 33, 34)));
+        index_set.push(Rc::new(hashset!(46, 47, 48, 55, 56, 57, 64, 65, 66)));
+        index_set.push(Rc::new(hashset!(50, 51, 52, 59, 60, 61, 68, 69, 70)));
+
+        Game::new_with_groups([
+                                  None, None, None, None, None, None, None, Some(1), None,
+                                  None, None, Some(2), None, None, None, None, Some(3), Some(4),
+                                  None, None, None, None, Some(5), Some(1), None, None, None,
+                                  None, None, None, None, None, Some(6), Some(5), None, None,
+                                  None, Some(7), None, Some(3), None, None, None, Some(8), None,
+                                  None, None, Some(3), None, None, None, None, None, None,
+                                  None, None, None, None, Some(8), None, None, None, None,
+                                  Some(5), Some(8), None, None, None, None, Some(9), None, None,
+                                  Some(6), Some(9), None, None, None, None, None, None, None
+                              ], index_set)
+    }
+
     pub fn cell(&self, x: usize, y: usize) -> ValueOption {
         self.initial_state.cell_at_xy(x, y, self.width, self.height)
     }
