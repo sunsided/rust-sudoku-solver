@@ -10,7 +10,9 @@ pub fn naked_twins(state: &mut GameState, candidates: &mut SetOfMoveCandidates) 
         for index in peer_indexes {
             // If no suggestion exists for the peer field, the current branch is unsolvable.
             // We assume that this is known beforehand.
-            assert!(candidates.contains_key(&index));
+            if !candidates.contains_key(&index) {
+                continue;
+            }
 
             let peers = &candidates[index];
 
@@ -23,6 +25,8 @@ pub fn naked_twins(state: &mut GameState, candidates: &mut SetOfMoveCandidates) 
                 if num_different == 0 {
                     assert!(false);
                 }
+
+                // TODO: Now do something with this knowledge. :)
             }
         }
     }

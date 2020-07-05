@@ -197,46 +197,55 @@ impl GameState {
         (x, y)
     }
 
-    pub fn validate(&self) -> bool {
+    pub fn validate(&self, allow_empty: bool) -> bool {
         let mut valid = true;
         for y in 0..self.game.height {
-            valid &= self.validate_row(y);
+            valid &= self.validate_row(y, allow_empty);
         }
 
         for x in 0..self.game.width {
-            valid &= self.validate_column(x);
+            valid &= self.validate_column(x, allow_empty);
         }
 
         for group in self.game.groups.as_slice() {
-            valid &= self.validate_group(group);
+            valid &= self.validate_group(group, allow_empty);
         }
 
         valid
     }
 
-    fn validate_row(&self, y: Coordinate) -> bool{
+    fn validate_row(&self, y: Coordinate, allow_empty: bool) -> bool{
         let mut values = HashSet::new();
         for item in self.get_row_values(0, y, false) {
+            if values.contains(&item.value) {
+                return false
+            }
             values.insert(item.value);
         }
-        values.len() == self.game.width
+        values.len() == self.game.width || allow_empty
     }
 
-    fn validate_column(&self, x: Coordinate) -> bool{
+    fn validate_column(&self, x: Coordinate, allow_empty: bool) -> bool{
         let mut values = HashSet::new();
         for item in self.get_column_values(x, 0, false) {
+            if values.contains(&item.value) {
+                return false
+            }
             values.insert(item.value);
         }
-        values.len() == self.game.height
+        values.len() == self.game.height || allow_empty
     }
 
-    fn validate_group(&self, group: &IndexSet) -> bool{
+    fn validate_group(&self, group: &IndexSet, allow_empty: bool) -> bool{
         let mut values = HashSet::new();
         let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
         for item in self.get_group_values(x, y, false) {
+            if values.contains(&item.value) {
+                return false
+            }
             values.insert(item.value);
         }
-        values.len() == group.len()
+        values.len() == group.len() || allow_empty
     }
 }
 

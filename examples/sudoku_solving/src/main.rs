@@ -20,6 +20,6 @@ fn main() {
     println!("\nSolution:");
     solution.accept(&board_visitor);
 
-    let valid = solution.validate();
+    let valid = solution.validate(false);
     println!("\nSolution valid: {}", if valid { "yes" } else { "no" });
 }

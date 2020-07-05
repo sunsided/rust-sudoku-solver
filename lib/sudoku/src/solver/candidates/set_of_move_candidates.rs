@@ -25,6 +25,14 @@ impl SetOfMoveCandidates {
 
     pub fn len(&self) -> usize { self.moves.len() }
 
+    pub fn total_len(&self) -> usize {
+        let mut size = 0usize;
+        for (idx, moves) in self.moves.iter() {
+            size += moves.len();
+        }
+        size
+    }
+
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -42,31 +50,38 @@ impl SetOfMoveCandidates {
         }
     }
 
-    pub fn remove(&mut self, index: Index) -> Option<HashSet<Placement, RandomState>> {
-        self.moves.remove(&index)
+    pub fn remove_index(&mut self, index: Index) -> bool {
+        self.moves.remove(&index);
+        self.moves.len() > 0
     }
 
-    pub fn remove_many<I>(&mut self, indexes: I) -> ()
+    pub fn remove_indexes<I>(&mut self, indexes: I) -> bool
         where I: Iterator<Item=Index> {
         for index in indexes {
             self.moves.remove(&index);
         }
+
+        self.moves.len() > 0
     }
 
-    pub fn eliminate(&mut self, candidate: &Placement) {
+    pub fn remove_candidate(&mut self, candidate: &Placement) -> bool {
         self.moves.entry(candidate.index)
             .and_modify(move |x| { x.remove(candidate); });
 
-        if self.moves[&candidate.index].is_empty() {
+        if self.moves.contains_key(&candidate.index) && self.moves[&candidate.index].is_empty() {
             self.moves.remove(&candidate.index);
         }
+
+        self.moves.len() > 0
     }
 
-    pub fn eliminate_many<I>(&mut self, candidates: I)
+    pub fn remove_candidates<I>(&mut self, candidates: I) -> bool
         where I: Iterator<Item=Placement> {
         for r#move in candidates {
-            self.eliminate(&r#move);
+            self.remove_candidate(&r#move);
         }
+
+        self.moves.len() > 0
     }
 
     pub fn iter<'a>(&'a self) -> impl Iterator<Item=MoveCandidates> + 'a {
