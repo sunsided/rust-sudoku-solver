@@ -11,17 +11,6 @@ pub struct SetOfMoveCandidates {
 impl SetOfMoveCandidates {
     pub fn new() -> SetOfMoveCandidates { SetOfMoveCandidates { moves: HashMap::new() } }
 
-    pub fn from_iter<I>(candidates: I) -> SetOfMoveCandidates
-        where I: Iterator<Item=MoveCandidates> {
-        let mut moves = HashMap::<Index, HashSet<Placement>>::new();
-        for candidate in candidates.into_iter() {
-            moves.entry(candidate.index)
-                .or_insert_with(HashSet::new)
-                .extend(candidate.moves);
-        }
-        SetOfMoveCandidates { moves }
-    }
-
     pub fn len(&self) -> usize { self.moves.len() }
 
     pub fn total_len(&self) -> usize {
@@ -42,27 +31,6 @@ impl SetOfMoveCandidates {
             .insert(candidate);
     }
 
-    pub fn add_many<I>(&mut self, candidates: I)
-        where I: Iterator<Item=Placement> {
-        for c in candidates {
-            self.add(c);
-        }
-    }
-
-    pub fn remove_index(&mut self, index: Index) -> bool {
-        self.moves.remove(&index);
-        self.moves.len() > 0
-    }
-
-    pub fn remove_indexes<I>(&mut self, indexes: I) -> bool
-        where I: Iterator<Item=Index> {
-        for index in indexes {
-            self.moves.remove(&index);
-        }
-
-        self.moves.len() > 0
-    }
-
     pub fn remove_candidate(&mut self, candidate: &Placement) -> bool {
         self.moves.entry(candidate.index)
             .and_modify(move |x| { x.remove(candidate); });
@@ -74,23 +42,10 @@ impl SetOfMoveCandidates {
         self.moves.len() > 0
     }
 
-    pub fn remove_candidates<I>(&mut self, candidates: I) -> bool
-        where I: Iterator<Item=Placement> {
-        for r#move in candidates {
-            self.remove_candidate(&r#move);
-        }
-
-        self.moves.len() > 0
-    }
-
     pub fn iter<'a>(&'a self) -> impl Iterator<Item=MoveCandidates> + 'a {
         self.moves.iter().map(|(key, value)| {
             MoveCandidates::from_iter(key.clone(), value.iter().map(|x| x.clone()))
         })
-    }
-
-    pub fn contains_key(&self, index: &Index) -> bool {
-        self.moves.contains_key(index)
     }
 }
 

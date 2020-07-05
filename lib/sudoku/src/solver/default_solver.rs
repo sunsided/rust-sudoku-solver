@@ -1,13 +1,13 @@
 use std::collections::HashSet;
+use std::iter::FromIterator;
+use std::iter::IntoIterator;
 use log::debug;
 
 use crate::prelude::*;
 use crate::GameState;
 use crate::game::{Placement, CollectType};
 use crate::solver::candidates::{find_move_candidates, MoveCandidates, SetOfMoveCandidates};
-use crate::solver::steps::{lone_singles, naked_twins, hidden_singles};
-use std::iter::FromIterator;
-use std::iter::IntoIterator;
+use crate::solver::steps::{lone_singles, hidden_singles};
 
 pub fn solve(game: &GameState) -> GameState {
     let valid_symbols = collect_valid_symbols(game);
@@ -51,16 +51,7 @@ pub fn solve(game: &GameState) -> GameState {
                 continue 'stack;
             }
 
-            // Apply naked twins strategy.
-            if naked_twins(&mut state, &mut candidates) {
-                // If an invalid move was made here or the board isn't solvable, leave this branch.
-                if !state.validate(true) {
-                    println!("Branch is invalid.");
-                    continue 'stack;
-                }
-
-                applied_some = true;
-            }
+            // TODO: Apply naked twins strategy
         }
 
         // Sanity check.

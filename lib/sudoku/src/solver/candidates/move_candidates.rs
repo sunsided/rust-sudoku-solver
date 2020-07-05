@@ -15,8 +15,6 @@ impl MoveCandidates {
         MoveCandidates { index, moves: HashSet::from_iter(moves) }
     }
 
-    pub fn len(&self) -> usize { self.moves.len() }
-
     pub fn is_trivial(&self) -> bool {
         self.moves.len() == 1
     }
