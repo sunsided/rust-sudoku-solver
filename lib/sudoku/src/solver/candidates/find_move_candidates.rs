@@ -1,9 +1,9 @@
-use std::collections::{HashSet, BTreeMap};
+use std::collections::HashSet;
 use std::iter::FromIterator;
 use crate::prelude::*;
 use crate::GameState;
 use crate::game::Placement;
-use crate::solver::candidates::{MoveCandidates, SetOfMoveCandidates};
+use crate::solver::candidates::SetOfMoveCandidates;
 
 
 /// Finds the open cells and returns them in order of descending move options.

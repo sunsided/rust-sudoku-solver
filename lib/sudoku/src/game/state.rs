@@ -1,6 +1,5 @@
 use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
-use std::ops::Add;
 
 pub struct State {
     pub id: String,

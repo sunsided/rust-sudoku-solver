@@ -1,7 +1,5 @@
-use crate::prelude::*;
 use crate::{GameState, Placement};
 use crate::solver::candidates::SetOfMoveCandidates;
-use crate::game::CollectType;
 use std::collections::HashSet;
 
 pub fn hidden_singles(state: &mut GameState, candidates: &SetOfMoveCandidates) -> Vec<Placement> {

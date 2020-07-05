@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::collections::hash_map::RandomState;
 use crate::prelude::*;
 use crate::game::Placement;
 use crate::solver::candidates::MoveCandidates;
@@ -27,7 +26,7 @@ impl SetOfMoveCandidates {
 
     pub fn total_len(&self) -> usize {
         let mut size = 0usize;
-        for (idx, moves) in self.moves.iter() {
+        for (_, moves) in self.moves.iter() {
             size += moves.len();
         }
         size
@@ -88,16 +87,6 @@ impl SetOfMoveCandidates {
         self.moves.iter().map(|(key, value)| {
             MoveCandidates::from_iter(key.clone(), value.iter().map(|x| x.clone()))
         })
-    }
-
-    pub fn into_iter(self) -> impl Iterator<Item=MoveCandidates> {
-        self.moves.into_iter().map(|(key, value)| {
-            MoveCandidates::from_iter(key, value.into_iter())
-        })
-    }
-
-    pub fn trim(&mut self) {
-        self.moves.retain(|_, value| value.len() > 0);
     }
 
     pub fn contains_key(&self, index: &Index) -> bool {

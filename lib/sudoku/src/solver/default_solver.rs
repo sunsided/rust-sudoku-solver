@@ -1,4 +1,4 @@
-use std::collections::{HashSet, BTreeMap, HashMap};
+use std::collections::HashSet;
 use log::debug;
 
 use crate::prelude::*;
@@ -51,7 +51,6 @@ pub fn solve(game: &GameState) -> GameState {
                 continue 'stack;
             }
 
-            /*
             // Apply naked twins strategy.
             if naked_twins(&mut state, &mut candidates) {
                 // If an invalid move was made here or the board isn't solvable, leave this branch.
@@ -62,7 +61,6 @@ pub fn solve(game: &GameState) -> GameState {
 
                 applied_some = true;
             }
-             */
         }
 
         // Sanity check.
@@ -156,12 +154,4 @@ fn collect_valid_symbols(game: &GameState) -> HashSet<Value> {
         symbols.insert(*symbol);
     }
     symbols
-}
-
-fn to_value_vec(set: HashSet<Placement>) -> Vec<Value> {
-    let mut vec = Vec::new();
-    for value in set.into_iter() {
-        vec.push(value.value);
-    }
-    vec
 }

@@ -1,8 +1,6 @@
-use crate::prelude::*;
-use crate::{GameState, Placement};
+use crate::GameState;
 use crate::solver::candidates::SetOfMoveCandidates;
 use crate::game::CollectType;
-use std::collections::HashSet;
 
 pub fn naked_twins(state: &mut GameState, candidates: &mut SetOfMoveCandidates) -> bool {
     for candidate in candidates.iter() {

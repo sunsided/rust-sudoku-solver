@@ -5,7 +5,6 @@ use crate::{Game, State};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use crate::game::Placement;
-use std::process::exit;
 
 pub enum CollectType {
     All,
