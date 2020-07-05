@@ -36,7 +36,7 @@ pub fn solve(game: &GameState) -> GameState {
             debug!("  - {} candidates remaining", candidates.total_len());
 
             // Apply lone singles strategy.
-            if let Ok(applied) = apply_lone_singles(&mut state, &mut candidates) {
+            if let Ok(applied) = apply_simple_strategy(&(lone_singles as StrategyFn), &mut state, &mut candidates) {
                 applied_some |= applied;
             }
             else {
@@ -44,7 +44,7 @@ pub fn solve(game: &GameState) -> GameState {
             }
 
             // Apply hidden singles strategy.
-            if let Ok(applied) = apply_hidden_singles(&mut state, &mut candidates) {
+            if let Ok(applied) = apply_simple_strategy(&(hidden_singles as StrategyFn), &mut state, &mut candidates) {
                 applied_some |= applied;
             }
             else {
@@ -109,37 +109,17 @@ pub fn solve(game: &GameState) -> GameState {
     panic!()
 }
 
-fn apply_lone_singles(mut state: &mut GameState, mut candidates: &mut SetOfMoveCandidates) -> Result<bool, bool> {
+pub type StrategyFn = fn(&mut GameState, &SetOfMoveCandidates) -> Vec<Placement>;
+
+fn apply_simple_strategy(strategy: &StrategyFn, mut state: &mut GameState, mut candidates: &mut SetOfMoveCandidates) -> Result<bool, bool> {
     let mut applied_some = true;
     while applied_some {
         applied_some = false;
 
-        let applied = lone_singles(&mut state, &candidates);
+        let applied = strategy(&mut state, &candidates);
         if !applied.is_empty() {
             eliminate_many(&state, &mut candidates, applied.into_iter());
-            debug!("  - Applying lone single strategy; candidates left: {}.", candidates.total_len());
-
-            // If an invalid move was made here or the board isn't solvable, leave this branch.
-            if !state.validate(true) {
-                debug!("  ! Branch is invalid.");
-                return Err(false);
-            }
-
-            applied_some = true;
-        }
-    }
-    Ok(applied_some)
-}
-
-fn apply_hidden_singles(mut state: &mut GameState, mut candidates: &mut SetOfMoveCandidates) -> Result<bool, bool> {
-    let mut applied_some = true;
-    while applied_some {
-        applied_some = false;
-
-        let applied = hidden_singles(&mut state, &candidates);
-        if !applied.is_empty() {
-            eliminate_many(&state, &mut candidates, applied.into_iter());
-            debug!("  - Applying hidden single strategy; candidates left: {}.", candidates.total_len());
+            debug!("  - Candidates left after applying strategy: {}.", candidates.total_len());
 
             // If an invalid move was made here or the board isn't solvable, leave this branch.
             if !state.validate(true) {
