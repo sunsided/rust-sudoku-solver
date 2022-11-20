@@ -35,7 +35,7 @@ impl State {
     }
 
     pub fn empty_cells(&self) -> IndexSet {
-        let mut set = IndexSet::new();
+        let mut set = IndexSet::new(); // TODO: Use bitset
         for index in 0..self.values.len() {
             if self.values[index].is_none() {
                 set.insert(index);

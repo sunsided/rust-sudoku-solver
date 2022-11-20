@@ -10,6 +10,10 @@ use crate::solver::steps::{hidden_singles, lone_singles};
 use crate::GameState;
 
 pub fn solve(game: &GameState) -> GameState {
+    // Strategies to apply in the given order.
+    // TODO: Apply naked twins strategy
+    let strategies: Vec<StrategyFn> = vec![lone_singles, hidden_singles];
+
     let valid_symbols = collect_valid_symbols(game);
     let initial_candidates = find_move_candidates(&game, &valid_symbols);
 
@@ -22,10 +26,12 @@ pub fn solve(game: &GameState) -> GameState {
         debug!("Stack depth: {}", stack.len());
 
         if candidates.is_empty() {
+            debug!("  - ! No more candidates; returning");
             return state;
         }
 
         if !is_solvable(&state, &candidates) {
+            debug!("  - ! State is unsolvable; skipping");
             continue 'stack;
         }
 
@@ -35,25 +41,16 @@ pub fn solve(game: &GameState) -> GameState {
 
             debug!("  - {} candidates remaining", candidates.total_len());
 
-            // Apply lone singles strategy.
-            if let Ok(applied) =
-                apply_simple_strategy(&(lone_singles as StrategyFn), &mut state, &mut candidates)
-            {
-                applied_some |= applied;
-            } else {
-                continue 'stack;
+            for strategy in strategies.iter() {
+                applied_some |=
+                    match apply_simple_strategy_repeatedly(strategy, &mut state, &mut candidates) {
+                        Ok(applied) => applied,
+                        Err(_) => {
+                            // branch is invalid
+                            continue 'stack;
+                        }
+                    };
             }
-
-            // Apply hidden singles strategy.
-            if let Ok(applied) =
-                apply_simple_strategy(&(hidden_singles as StrategyFn), &mut state, &mut candidates)
-            {
-                applied_some |= applied;
-            } else {
-                continue 'stack;
-            }
-
-            // TODO: Apply naked twins strategy
         }
 
         // Sanity check.
@@ -63,12 +60,16 @@ pub fn solve(game: &GameState) -> GameState {
 
         // If the state didn't change, we need to fork.
         let mut sorted_candidates: Vec<MoveCandidates> = Vec::from_iter(candidates.iter());
-        sorted_candidates.sort_by_key(|v| v.moves.len());
+        sorted_candidates.sort_unstable_by_key(|v| v.moves.len());
 
         for candidate_set in sorted_candidates {
             'candidates: for candidate in candidate_set.moves {
                 let key = (state.id().clone(), candidate.clone());
-                assert!(!tried_moves.contains(&key));
+
+                if tried_moves.contains(&key) {
+                    debug!("  ! Found move that was already tried; skipping.");
+                    continue 'candidates;
+                }
 
                 tried_moves.insert(key);
 
@@ -84,7 +85,7 @@ pub fn solve(game: &GameState) -> GameState {
                 }
 
                 debug!(
-                    "  + branching; {} candidates to explore",
+                    "  + Branching; {} candidates to explore",
                     branch_candidates.total_len()
                 );
                 stack.push((branch, branch_candidates));
@@ -94,42 +95,59 @@ pub fn solve(game: &GameState) -> GameState {
 
         // All possible options were exhausted - this branch is a dead end.
         if state.validate(false) {
+            debug!("Solved.");
             return state;
         }
     }
 
-    panic!()
+    unreachable!()
 }
 
 pub type StrategyFn = fn(&mut GameState, &SetOfMoveCandidates) -> Vec<Placement>;
 
-fn apply_simple_strategy(
+fn apply_simple_strategy_repeatedly(
     strategy: &StrategyFn,
     mut state: &mut GameState,
     mut candidates: &mut SetOfMoveCandidates,
 ) -> Result<bool, bool> {
-    let mut applied_some = true;
-    while applied_some {
-        applied_some = false;
-
-        let applied = strategy(&mut state, &candidates);
-        if !applied.is_empty() {
-            eliminate_many(&state, &mut candidates, applied.into_iter());
-            debug!(
-                "  - Candidates left after applying strategy: {}.",
-                candidates.total_len()
-            );
-
-            // If an invalid move was made here or the board isn't solvable, leave this branch.
-            if !state.validate(true) {
-                debug!("  ! Branch is invalid.");
-                return Err(false);
+    let mut applied_some = false;
+    loop {
+        match apply_simple_strategy_once(strategy, state, candidates) {
+            Ok(true) => {
+                applied_some = true;
+                continue;
             }
-
-            applied_some = true;
+            Ok(false) => {
+                return Ok(applied_some);
+            }
+            Err(e) => return Err(e),
         }
     }
-    Ok(applied_some)
+}
+
+fn apply_simple_strategy_once(
+    strategy: &StrategyFn,
+    mut state: &mut GameState,
+    mut candidates: &mut SetOfMoveCandidates,
+) -> Result<bool, bool> {
+    let applied = strategy(&mut state, &candidates);
+    if applied.is_empty() {
+        return Ok(false);
+    }
+
+    eliminate_many(&state, &mut candidates, applied.into_iter());
+    debug!(
+        "  - Candidates left after applying strategy: {}.",
+        candidates.total_len()
+    );
+
+    // If an invalid move was made here or the board isn't solvable, leave this branch.
+    if !state.validate(true) {
+        debug!("  ! Branch is invalid.");
+        return Err(false);
+    }
+
+    Ok(true)
 }
 
 fn eliminate(state: &GameState, candidates: &mut SetOfMoveCandidates, placement: &Placement) {

@@ -81,8 +81,8 @@ impl GameState {
     pub fn apply_and_fork(&self, index: usize, value: u32) -> GameState {
         let state = self.state.apply_and_fork(index, value);
 
-        let mut missing = self.state.empty_cells();
-        missing.remove(&index);
+        let mut missing = state.empty_cells();
+        debug_assert!(!missing.contains(&index));
 
         GameState {
             game: self.game.clone(),
@@ -270,7 +270,7 @@ impl GameState {
     }
 
     fn validate_row(&self, y: Coordinate, allow_empty: bool) -> bool {
-        let mut values = HashSet::new();
+        let mut values = HashSet::new(); // TODO: Replace with bit vector
         for item in self.get_row_values(0, y, false) {
             if values.contains(&item.value) {
                 return false;
@@ -281,7 +281,7 @@ impl GameState {
     }
 
     fn validate_column(&self, x: Coordinate, allow_empty: bool) -> bool {
-        let mut values = HashSet::new();
+        let mut values = HashSet::new(); // TODO: Replace with bit vector
         for item in self.get_column_values(x, 0, false) {
             if values.contains(&item.value) {
                 return false;
@@ -292,7 +292,7 @@ impl GameState {
     }
 
     fn validate_group(&self, group: &IndexSet, allow_empty: bool) -> bool {
-        let mut values = HashSet::new();
+        let mut values = HashSet::new(); // TODO: Replace with bit vector
         let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
         for item in self.get_group_values(x, y, false) {
             if values.contains(&item.value) {
