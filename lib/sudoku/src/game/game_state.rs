@@ -1,28 +1,32 @@
-use std::rc::Rc;
-use visitor::prelude::*;
 use crate::game::prelude::*;
+use crate::game::Placement;
 use crate::{Game, State};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
-use crate::game::Placement;
+use std::rc::Rc;
+use visitor::prelude::*;
 
 pub enum CollectType {
     All,
     Empty,
-    Filled
+    Filled,
 }
 
 pub struct GameState {
     pub empty_cells: IndexSet,
     pub game: Rc<Game>,
-    pub state: State
+    pub state: State,
 }
 
 impl GameState {
     pub fn new(game: Game) -> GameState {
         let state = game.fork_state();
         let missing = state.empty_cells();
-        GameState { game: Rc::new(game), state, empty_cells: missing }
+        GameState {
+            game: Rc::new(game),
+            state,
+            empty_cells: missing,
+        }
     }
 
     pub fn peers_by_index(&self, index: Index, exclude_self: bool) -> HashSet<Placement> {
@@ -30,19 +34,35 @@ impl GameState {
         self.peers_by_xy(x, y, exclude_self)
     }
 
-    pub fn peer_indexes_by_index(&self, index: Index, exclude_self: bool, how: CollectType) -> HashSet<Index> {
+    pub fn peer_indexes_by_index(
+        &self,
+        index: Index,
+        exclude_self: bool,
+        how: CollectType,
+    ) -> HashSet<Index> {
         let (x, y) = self.index_to_xy(index);
         self.peer_indexes_by_xy(x, y, exclude_self, how)
     }
 
-    pub fn peers_by_xy(&self, x: Coordinate, y: Coordinate, exclude_self: bool) -> HashSet<Placement> {
+    pub fn peers_by_xy(
+        &self,
+        x: Coordinate,
+        y: Coordinate,
+        exclude_self: bool,
+    ) -> HashSet<Placement> {
         let column = self.get_column_values(x, y, exclude_self);
         let row = self.get_row_values(x, y, exclude_self);
         let group = self.get_group_values(x, y, exclude_self);
         join_hashset!(column, row, group)
     }
 
-    pub fn peer_indexes_by_xy(&self, x: Coordinate, y: Coordinate, exclude_self: bool, how: CollectType) -> HashSet<Index> {
+    pub fn peer_indexes_by_xy(
+        &self,
+        x: Coordinate,
+        y: Coordinate,
+        exclude_self: bool,
+        how: CollectType,
+    ) -> HashSet<Index> {
         let column = self.get_column_indexes(x, y, exclude_self, &how);
         let row = self.get_row_indexes(x, y, exclude_self, &how);
         let group = self.get_group_indexes(x, y, exclude_self, &how);
@@ -64,7 +84,11 @@ impl GameState {
         let mut missing = self.state.empty_cells();
         missing.remove(&index);
 
-        GameState { game: self.game.clone(), state, empty_cells: missing }
+        GameState {
+            game: self.game.clone(),
+            state,
+            empty_cells: missing,
+        }
     }
 
     pub fn valid_symbols(&self) -> &[u32; 9] {
@@ -72,12 +96,20 @@ impl GameState {
     }
 
     pub fn cell(&self, x: usize, y: usize) -> ValueOption {
-        self.state.cell_at_xy(x, y, self.game.width, self.game.height)
+        self.state
+            .cell_at_xy(x, y, self.game.width, self.game.height)
     }
 
-    pub fn id(&self) -> &String { &self.state.id }
+    pub fn id(&self) -> &String {
+        &self.state.id
+    }
 
-    fn get_row_values(&self, x_reference: Coordinate, y: Coordinate, exclude_self: bool) -> Vec<Placement> {
+    fn get_row_values(
+        &self,
+        x_reference: Coordinate,
+        y: Coordinate,
+        exclude_self: bool,
+    ) -> Vec<Placement> {
         let mut set = Vec::new();
         for x in 0..self.game.width {
             if exclude_self && (x == x_reference) {
@@ -90,7 +122,13 @@ impl GameState {
         set
     }
 
-    fn get_row_indexes(&self, x_reference: Coordinate, y: Coordinate, exclude_self: bool, how: &CollectType) -> Vec<Index> {
+    fn get_row_indexes(
+        &self,
+        x_reference: Coordinate,
+        y: Coordinate,
+        exclude_self: bool,
+        how: &CollectType,
+    ) -> Vec<Index> {
         let mut set = Vec::new();
         for x in 0..self.game.width {
             if exclude_self && (x == x_reference) {
@@ -103,7 +141,12 @@ impl GameState {
         set
     }
 
-    fn get_column_values(&self, x: Coordinate, y_reference: Coordinate, exclude_self: bool) -> Vec<Placement> {
+    fn get_column_values(
+        &self,
+        x: Coordinate,
+        y_reference: Coordinate,
+        exclude_self: bool,
+    ) -> Vec<Placement> {
         let mut set = Vec::new();
         for y in 0..self.game.height {
             if exclude_self && (y == y_reference) {
@@ -116,7 +159,13 @@ impl GameState {
         set
     }
 
-    fn get_column_indexes(&self, x: Coordinate, y_reference: Coordinate, exclude_self: bool, how: &CollectType) -> Vec<Index> {
+    fn get_column_indexes(
+        &self,
+        x: Coordinate,
+        y_reference: Coordinate,
+        exclude_self: bool,
+        how: &CollectType,
+    ) -> Vec<Index> {
         let mut set = Vec::new();
         for y in 0..self.game.height {
             if exclude_self && (y == y_reference) {
@@ -144,7 +193,13 @@ impl GameState {
         set
     }
 
-    fn get_group_indexes(&self, x: Coordinate, y: Coordinate, exclude_self: bool, how: &CollectType) -> Vec<Index> {
+    fn get_group_indexes(
+        &self,
+        x: Coordinate,
+        y: Coordinate,
+        exclude_self: bool,
+        how: &CollectType,
+    ) -> Vec<Index> {
         let mut set = Vec::new();
         let group = &self.game.group_at(x, y);
         let index_reference = self.xy_to_index(x, y);
@@ -160,7 +215,8 @@ impl GameState {
     }
 
     fn cell_at_index(&self, index: Index) -> ValueOption {
-        self.state.cell_at_index(index, self.game.width, self.game.height)
+        self.state
+            .cell_at_index(index, self.game.width, self.game.height)
     }
 
     fn collect_if_set(&self, set: &mut Vec<Placement>, index: Index) {
@@ -177,7 +233,7 @@ impl GameState {
                 if cell.is_none() {
                     set.push(index);
                 }
-            },
+            }
             CollectType::Filled => {
                 if cell.is_some() {
                     set.push(index);
@@ -213,34 +269,34 @@ impl GameState {
         valid
     }
 
-    fn validate_row(&self, y: Coordinate, allow_empty: bool) -> bool{
+    fn validate_row(&self, y: Coordinate, allow_empty: bool) -> bool {
         let mut values = HashSet::new();
         for item in self.get_row_values(0, y, false) {
             if values.contains(&item.value) {
-                return false
+                return false;
             }
             values.insert(item.value);
         }
         values.len() == self.game.width || allow_empty
     }
 
-    fn validate_column(&self, x: Coordinate, allow_empty: bool) -> bool{
+    fn validate_column(&self, x: Coordinate, allow_empty: bool) -> bool {
         let mut values = HashSet::new();
         for item in self.get_column_values(x, 0, false) {
             if values.contains(&item.value) {
-                return false
+                return false;
             }
             values.insert(item.value);
         }
         values.len() == self.game.height || allow_empty
     }
 
-    fn validate_group(&self, group: &IndexSet, allow_empty: bool) -> bool{
+    fn validate_group(&self, group: &IndexSet, allow_empty: bool) -> bool {
         let mut values = HashSet::new();
         let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
         for item in self.get_group_values(x, y, false) {
             if values.contains(&item.value) {
-                return false
+                return false;
             }
             values.insert(item.value);
         }
@@ -254,7 +310,8 @@ impl Clone for GameState {
         GameState {
             game: self.game.clone(),
             state: self.state.clone(),
-            empty_cells: missing }
+            empty_cells: missing,
+        }
     }
 }
 

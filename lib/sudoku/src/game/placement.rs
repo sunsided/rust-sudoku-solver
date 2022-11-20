@@ -3,7 +3,7 @@ use crate::game::prelude::*;
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
 pub struct Placement {
     pub value: Value,
-    pub index: Index
+    pub index: Index,
 }
 
 impl Placement {
@@ -11,4 +11,3 @@ impl Placement {
         Placement { value, index }
     }
 }
-

@@ -1,5 +1,5 @@
-use visitor::prelude::*;
 use crate::GameState;
+use visitor::prelude::*;
 
 pub struct AsciiBoardPrinter {}
 
@@ -26,14 +26,14 @@ fn print_cell(data: &GameState, x: usize, y: usize) {
     let cell = data.cell(x, y);
     match cell {
         None => print!("·"),
-        Some(value) => print!("{}", value)
+        Some(value) => print!("{}", value),
     }
     print_spaces(x);
 }
 
 fn print_spaces(x: usize) {
     if x >= 8 {
-        return
+        return;
     }
     print!(" ");
     if (x + 1) % 3 == 0 {

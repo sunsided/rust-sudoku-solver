@@ -3,13 +3,12 @@ use std::hash::{Hash, Hasher};
 
 pub struct State {
     pub id: String,
-    values: [ValueOption; 81]
+    values: [ValueOption; 81],
 }
 
 impl State {
     /// Initializes a standard Sudoku board from values in row-major order.
-    pub fn new(values: [ValueOption; 81]) -> State
-    {
+    pub fn new(values: [ValueOption; 81]) -> State {
         let id = Self::make_id(&values);
         State { values, id }
     }
@@ -48,7 +47,11 @@ impl State {
     fn make_id(values: &[ValueOption]) -> String {
         let mut str = String::new();
         for value in values.iter() {
-            let value_unwrapped = if value.is_some() { value.unwrap() + 1 } else { 0 };
+            let value_unwrapped = if value.is_some() {
+                value.unwrap() + 1
+            } else {
+                0
+            };
             str += format!("{}.", value_unwrapped).as_str();
         }
         str
@@ -57,7 +60,10 @@ impl State {
 
 impl Clone for State {
     fn clone(&self) -> Self {
-        State { values: self.values.clone(), id: self.id.clone() }
+        State {
+            values: self.values.clone(),
+            id: self.id.clone(),
+        }
     }
 }
 

@@ -1,13 +1,13 @@
 // TODO: https://stackoverflow.com/questions/27673674/is-there-a-way-to-create-a-data-type-that-only-accepts-a-range-of-values
 // TODO: See https://docs.rs/array2d/0.2.1/array2d/
 
-use visitor::{Visitor, AcceptVisitor};
-use std::collections::{HashSet, BTreeSet};
-use std::vec::Vec;
-use std::rc::Rc;
-use std::mem::MaybeUninit;
-use crate::State;
 use crate::prelude::*;
+use crate::State;
+use std::collections::{BTreeSet, HashSet};
+use std::mem::MaybeUninit;
+use std::rc::Rc;
+use std::vec::Vec;
+use visitor::{AcceptVisitor, Visitor};
 
 pub struct Game {
     pub width: usize,
@@ -15,7 +15,7 @@ pub struct Game {
     valid_symbols: [u32; 9],
     initial_state: State,
     pub groups: Vec<Rc<IndexSet>>,
-    group_lookup: [usize; 81]
+    group_lookup: [usize; 81],
 }
 
 impl Game {
@@ -24,41 +24,127 @@ impl Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
-        Game { width: 9, height: 9, valid_symbols: symbols,
+        Game {
+            width: 9,
+            height: 9,
+            valid_symbols: symbols,
             initial_state: State::new(state),
-            groups, group_lookup }
+            groups,
+            group_lookup,
+        }
     }
 
     pub fn new_with_groups(state: [ValueOption; 81], groups: Vec<Rc<IndexSet>>) -> Game {
         let symbols = build_default_symbols();
         let group_lookup = build_default_index_to_group_lookup(&groups);
-        Game { width: 9, height: 9, valid_symbols: symbols,
+        Game {
+            width: 9,
+            height: 9,
+            valid_symbols: symbols,
             initial_state: State::new(state),
-            groups, group_lookup }
+            groups,
+            group_lookup,
+        }
     }
 
     pub fn new_empty() -> Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
-        Game { width: 9, height: 9, valid_symbols: symbols,
+        Game {
+            width: 9,
+            height: 9,
+            valid_symbols: symbols,
             initial_state: State::new([None; 81]),
-            groups, group_lookup }
+            groups,
+            group_lookup,
+        }
     }
 
     pub fn new_example() -> Game {
         Game::new([
-            Some(5), Some(3), None, None, Some(7), None, None, None, None,
-            Some(6), None, None, Some(1), Some(9), Some(5), None, None, None,
-            None, Some(9), Some(8), None, None, None, None, Some(6), None,
-
-            Some(8), None, None, None, Some(6), None, None, None, Some(3),
-            Some(4), None, None, Some(8), None, Some(3), None, None, Some(1),
-            Some(7), None, None, None, Some(2), None, None, None, Some(6),
-
-            None, Some(6), None, None, None, None, Some(2), Some(8), None,
-            None, None, None, Some(4), Some(1), Some(9), None, None, Some(5),
-            None, None, None, None, Some(8), None, None, Some(7), Some(9)])
+            Some(5),
+            Some(3),
+            None,
+            None,
+            Some(7),
+            None,
+            None,
+            None,
+            None,
+            Some(6),
+            None,
+            None,
+            Some(1),
+            Some(9),
+            Some(5),
+            None,
+            None,
+            None,
+            None,
+            Some(9),
+            Some(8),
+            None,
+            None,
+            None,
+            None,
+            Some(6),
+            None,
+            Some(8),
+            None,
+            None,
+            None,
+            Some(6),
+            None,
+            None,
+            None,
+            Some(3),
+            Some(4),
+            None,
+            None,
+            Some(8),
+            None,
+            Some(3),
+            None,
+            None,
+            Some(1),
+            Some(7),
+            None,
+            None,
+            None,
+            Some(2),
+            None,
+            None,
+            None,
+            Some(6),
+            None,
+            Some(6),
+            None,
+            None,
+            None,
+            None,
+            Some(2),
+            Some(8),
+            None,
+            None,
+            None,
+            None,
+            Some(4),
+            Some(1),
+            Some(9),
+            None,
+            None,
+            Some(5),
+            None,
+            None,
+            None,
+            None,
+            Some(8),
+            None,
+            None,
+            Some(7),
+            Some(9),
+        ])
     }
 
     pub fn new_example_nonomino() -> Game {
@@ -73,17 +159,92 @@ impl Game {
         index_set.push(Rc::new(hashset!(54, 63, 64, 65, 72, 73, 74, 75, 76)));
         index_set.push(Rc::new(hashset!(52, 53, 62, 69, 70, 71, 78, 79, 80)));
 
-        Game::new_with_groups([
-            Some(3), None, None, None, None, None, None, None, Some(4),
-            None, None, Some(2), None, Some(6), None, Some(1), None, None,
-            None, Some(1), None, Some(9), None, Some(8), None, Some(2), None,
-            None, None, Some(5), None, None, None, Some(6), None, None,
-            None, Some(2), None, None, None, None, None, Some(1), None,
-            None, None, Some(9), None, None, None, Some(8), None, None,
-            None, Some(8), None, Some(3), None, Some(4), None, Some(6), None,
-            None, None, Some(4), None, Some(1), None, Some(9), None, None,
-            Some(5), None, None, None, None, None, None, None, Some(7)
-        ], index_set)
+        Game::new_with_groups(
+            [
+                Some(3),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(4),
+                None,
+                None,
+                Some(2),
+                None,
+                Some(6),
+                None,
+                Some(1),
+                None,
+                None,
+                None,
+                Some(1),
+                None,
+                Some(9),
+                None,
+                Some(8),
+                None,
+                Some(2),
+                None,
+                None,
+                None,
+                Some(5),
+                None,
+                None,
+                None,
+                Some(6),
+                None,
+                None,
+                None,
+                Some(2),
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(1),
+                None,
+                None,
+                None,
+                Some(9),
+                None,
+                None,
+                None,
+                Some(8),
+                None,
+                None,
+                None,
+                Some(8),
+                None,
+                Some(3),
+                None,
+                Some(4),
+                None,
+                Some(6),
+                None,
+                None,
+                None,
+                Some(4),
+                None,
+                Some(1),
+                None,
+                Some(9),
+                None,
+                None,
+                Some(5),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(7),
+            ],
+            index_set,
+        )
     }
 
     pub fn new_example_hypersudoku() -> Game {
@@ -106,17 +267,92 @@ impl Game {
         index_set.push(Rc::new(hashset!(46, 47, 48, 55, 56, 57, 64, 65, 66)));
         index_set.push(Rc::new(hashset!(50, 51, 52, 59, 60, 61, 68, 69, 70)));
 
-        Game::new_with_groups([
-                                  None, None, None, None, None, None, None, Some(1), None,
-                                  None, None, Some(2), None, None, None, None, Some(3), Some(4),
-                                  None, None, None, None, Some(5), Some(1), None, None, None,
-                                  None, None, None, None, None, Some(6), Some(5), None, None,
-                                  None, Some(7), None, Some(3), None, None, None, Some(8), None,
-                                  None, None, Some(3), None, None, None, None, None, None,
-                                  None, None, None, None, Some(8), None, None, None, None,
-                                  Some(5), Some(8), None, None, None, None, Some(9), None, None,
-                                  Some(6), Some(9), None, None, None, None, None, None, None
-                              ], index_set)
+        Game::new_with_groups(
+            [
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(1),
+                None,
+                None,
+                None,
+                Some(2),
+                None,
+                None,
+                None,
+                None,
+                Some(3),
+                Some(4),
+                None,
+                None,
+                None,
+                None,
+                Some(5),
+                Some(1),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(6),
+                Some(5),
+                None,
+                None,
+                None,
+                Some(7),
+                None,
+                Some(3),
+                None,
+                None,
+                None,
+                Some(8),
+                None,
+                None,
+                None,
+                Some(3),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(8),
+                None,
+                None,
+                None,
+                None,
+                Some(5),
+                Some(8),
+                None,
+                None,
+                None,
+                None,
+                Some(9),
+                None,
+                None,
+                Some(6),
+                Some(9),
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            ],
+            index_set,
+        )
     }
 
     pub fn cell(&self, x: usize, y: usize) -> ValueOption {
@@ -201,12 +437,13 @@ fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexSet>>) -> [usize; 81
 
 #[cfg(test)]
 mod tests {
-    use std::mem::MaybeUninit;
     use crate::game::game::build_default_group;
     use crate::prelude::*;
+    use std::mem::MaybeUninit;
 
     fn create_matrix() -> [ValueOption; 81] {
-        let mut array: [MaybeUninit<ValueOption>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
+        let mut array: [MaybeUninit<ValueOption>; 81] =
+            unsafe { MaybeUninit::uninit().assume_init() };
 
         for y in 0u8..9 {
             let offset = y * 9;

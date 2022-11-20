@@ -1,13 +1,13 @@
+use log::debug;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::iter::IntoIterator;
-use log::debug;
 
+use crate::game::{CollectType, Placement};
 use crate::prelude::*;
-use crate::GameState;
-use crate::game::{Placement, CollectType};
 use crate::solver::candidates::{find_move_candidates, MoveCandidates, SetOfMoveCandidates};
-use crate::solver::steps::{lone_singles, hidden_singles};
+use crate::solver::steps::{hidden_singles, lone_singles};
+use crate::GameState;
 
 pub fn solve(game: &GameState) -> GameState {
     let valid_symbols = collect_valid_symbols(game);
@@ -26,7 +26,7 @@ pub fn solve(game: &GameState) -> GameState {
         }
 
         if !is_solvable(&state, &candidates) {
-            continue 'stack
+            continue 'stack;
         }
 
         let mut applied_some = true;
@@ -36,18 +36,20 @@ pub fn solve(game: &GameState) -> GameState {
             debug!("  - {} candidates remaining", candidates.total_len());
 
             // Apply lone singles strategy.
-            if let Ok(applied) = apply_simple_strategy(&(lone_singles as StrategyFn), &mut state, &mut candidates) {
+            if let Ok(applied) =
+                apply_simple_strategy(&(lone_singles as StrategyFn), &mut state, &mut candidates)
+            {
                 applied_some |= applied;
-            }
-            else {
+            } else {
                 continue 'stack;
             }
 
             // Apply hidden singles strategy.
-            if let Ok(applied) = apply_simple_strategy(&(hidden_singles as StrategyFn), &mut state, &mut candidates) {
+            if let Ok(applied) =
+                apply_simple_strategy(&(hidden_singles as StrategyFn), &mut state, &mut candidates)
+            {
                 applied_some |= applied;
-            }
-            else {
+            } else {
                 continue 'stack;
             }
 
@@ -56,7 +58,7 @@ pub fn solve(game: &GameState) -> GameState {
 
         // Sanity check.
         if !is_solvable(&state, &candidates) {
-            continue 'stack
+            continue 'stack;
         }
 
         // If the state didn't change, we need to fork.
@@ -81,7 +83,10 @@ pub fn solve(game: &GameState) -> GameState {
                     stack.push((state, candidates));
                 }
 
-                debug!("  + branching; {} candidates to explore", branch_candidates.total_len());
+                debug!(
+                    "  + branching; {} candidates to explore",
+                    branch_candidates.total_len()
+                );
                 stack.push((branch, branch_candidates));
                 continue 'stack;
             }
@@ -98,7 +103,11 @@ pub fn solve(game: &GameState) -> GameState {
 
 pub type StrategyFn = fn(&mut GameState, &SetOfMoveCandidates) -> Vec<Placement>;
 
-fn apply_simple_strategy(strategy: &StrategyFn, mut state: &mut GameState, mut candidates: &mut SetOfMoveCandidates) -> Result<bool, bool> {
+fn apply_simple_strategy(
+    strategy: &StrategyFn,
+    mut state: &mut GameState,
+    mut candidates: &mut SetOfMoveCandidates,
+) -> Result<bool, bool> {
     let mut applied_some = true;
     while applied_some {
         applied_some = false;
@@ -106,7 +115,10 @@ fn apply_simple_strategy(strategy: &StrategyFn, mut state: &mut GameState, mut c
         let applied = strategy(&mut state, &candidates);
         if !applied.is_empty() {
             eliminate_many(&state, &mut candidates, applied.into_iter());
-            debug!("  - Candidates left after applying strategy: {}.", candidates.total_len());
+            debug!(
+                "  - Candidates left after applying strategy: {}.",
+                candidates.total_len()
+            );
 
             // If an invalid move was made here or the board isn't solvable, leave this branch.
             if !state.validate(true) {
@@ -127,7 +139,11 @@ fn eliminate(state: &GameState, candidates: &mut SetOfMoveCandidates, placement:
     }
 }
 
-fn eliminate_many(state: &GameState, candidates: &mut SetOfMoveCandidates, applied: impl Iterator<Item=Placement>) {
+fn eliminate_many(
+    state: &GameState,
+    candidates: &mut SetOfMoveCandidates,
+    applied: impl Iterator<Item = Placement>,
+) {
     for placement in applied {
         eliminate(state, candidates, &placement);
     }

@@ -1,7 +1,6 @@
-use crate::GameState;
 use crate::game::Placement;
 use crate::solver::candidates::SetOfMoveCandidates;
-
+use crate::GameState;
 
 pub fn lone_singles(state: &mut GameState, candidates: &SetOfMoveCandidates) -> Vec<Placement> {
     let mut applied = Vec::new();

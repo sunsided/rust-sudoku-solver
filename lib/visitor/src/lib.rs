@@ -1,5 +1,5 @@
 pub mod prelude {
-    pub use crate::{Visitor, AcceptVisitor};
+    pub use crate::{AcceptVisitor, Visitor};
 }
 
 pub trait Visitor<D> {
@@ -12,17 +12,18 @@ pub trait AcceptVisitor<D> {
     fn accept<V: Visitor<D>>(&self, visitor: &V) -> V::Result;
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::{AcceptVisitor, Visitor};
 
     struct Data {
-        pub value: u8
+        pub value: u8,
     }
 
     impl Data {
-        pub fn new(value: u8) -> Data { Data { value }}
+        pub fn new(value: u8) -> Data {
+            Data { value }
+        }
     }
 
     struct DoublingVisitor {}
@@ -44,7 +45,7 @@ mod tests {
     #[test]
     fn it_works() {
         let data = Data::new(42);
-        let visitor = DoublingVisitor { };
+        let visitor = DoublingVisitor {};
         let value = data.accept(&visitor);
         assert_eq!(value, 84);
     }

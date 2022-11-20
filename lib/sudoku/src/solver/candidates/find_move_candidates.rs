@@ -1,13 +1,15 @@
+use crate::game::Placement;
+use crate::prelude::*;
+use crate::solver::candidates::SetOfMoveCandidates;
+use crate::GameState;
 use std::collections::HashSet;
 use std::iter::FromIterator;
-use crate::prelude::*;
-use crate::GameState;
-use crate::game::Placement;
-use crate::solver::candidates::SetOfMoveCandidates;
-
 
 /// Finds the open cells and returns them in order of descending move options.
-pub fn find_move_candidates(state: &GameState, valid_symbols: &HashSet<Value>) -> SetOfMoveCandidates {
+pub fn find_move_candidates(
+    state: &GameState,
+    valid_symbols: &HashSet<Value>,
+) -> SetOfMoveCandidates {
     let mut candidates = SetOfMoveCandidates::new();
 
     for index in &state.empty_cells {
@@ -21,10 +23,17 @@ pub fn find_move_candidates(state: &GameState, valid_symbols: &HashSet<Value>) -
     candidates
 }
 
-fn collect_missing_values(index: Index, state: &GameState, valid_symbols: &HashSet<Value>) -> HashSet<Value> {
+fn collect_missing_values(
+    index: Index,
+    state: &GameState,
+    valid_symbols: &HashSet<Value>,
+) -> HashSet<Value> {
     let cell_values = state.peers_by_index(index, false);
     let value_set = to_value_set(cell_values);
-    valid_symbols.difference(&value_set).map(move |x| *x).collect()
+    valid_symbols
+        .difference(&value_set)
+        .map(move |x| *x)
+        .collect()
 }
 
 fn to_value_set(set: HashSet<Placement>) -> HashSet<Value> {

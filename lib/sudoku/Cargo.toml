@@ -2,11 +2,9 @@
 name = "sudoku"
 version = "0.1.0"
 authors = ["Markus Mayer"]
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+edition = "2021"
 
 [dependencies]
 visitor = { path = "../visitor" }
-log = "0.4.8"
+log = "0.4.17"
 
