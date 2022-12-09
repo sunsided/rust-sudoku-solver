@@ -2,8 +2,13 @@ use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
 
 pub struct State {
-    pub id: String,
+    pub id: StateId,
     values: [ValueOption; 81],
+}
+
+#[derive(Hash, Eq, PartialEq, Ord, PartialOrd, Copy, Clone)]
+pub struct StateId {
+    repr: [usize; 9],
 }
 
 impl State {
@@ -23,11 +28,11 @@ impl State {
         self.values[index]
     }
 
-    pub fn apply(&mut self, index: usize, value: u32) {
+    pub fn apply(&mut self, index: usize, value: Value) {
         self.values[index] = Some(value);
     }
 
-    pub fn apply_and_fork(&self, index: usize, value: u32) -> State {
+    pub fn apply_and_fork(&self, index: usize, value: Value) -> State {
         let mut state = self.values.clone();
         state[index] = Some(value);
         let id = Self::make_id(&self.values);
@@ -44,17 +49,25 @@ impl State {
         set
     }
 
-    fn make_id(values: &[ValueOption]) -> String {
-        let mut str = String::new();
+    fn make_id(values: &[ValueOption]) -> StateId {
+        let mut id = [0usize; 9];
+        let mut row_index = 0;
+        let mut power = 0;
         for value in values.iter() {
-            let value_unwrapped = if value.is_some() {
-                value.unwrap() + 1
-            } else {
-                0
-            };
-            str += format!("{}.", value_unwrapped).as_str();
+            if let Some(value) = value {
+                id[row_index] += value.get() as usize * 10usize.pow(power);
+            }
+
+            power += 1;
+
+            // Reset the counter when we reach the end of the row.
+            if power == 9 {
+                row_index += 1;
+                power = 0;
+            }
         }
-        str
+
+        StateId { repr: id }
     }
 }
 

@@ -107,8 +107,8 @@ pub type StrategyFn = fn(&mut GameState, &SetOfMoveCandidates) -> Vec<Placement>
 
 fn apply_simple_strategy_repeatedly(
     strategy: &StrategyFn,
-    mut state: &mut GameState,
-    mut candidates: &mut SetOfMoveCandidates,
+    state: &mut GameState,
+    candidates: &mut SetOfMoveCandidates,
 ) -> Result<bool, bool> {
     let mut applied_some = false;
     loop {

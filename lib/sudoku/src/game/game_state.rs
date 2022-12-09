@@ -1,4 +1,5 @@
 use crate::game::prelude::*;
+use crate::game::state::StateId;
 use crate::game::Placement;
 use crate::{Game, State};
 use std::collections::HashSet;
@@ -69,7 +70,7 @@ impl GameState {
         join_hashset!(column, row, group)
     }
 
-    pub fn apply(&mut self, index: usize, value: u32) {
+    pub fn apply(&mut self, index: usize, value: Value) {
         self.state.apply(index, value);
         self.empty_cells.remove(&index);
     }
@@ -78,10 +79,10 @@ impl GameState {
         self.apply(r#move.index, r#move.value)
     }
 
-    pub fn apply_and_fork(&self, index: usize, value: u32) -> GameState {
+    pub fn apply_and_fork(&self, index: usize, value: Value) -> GameState {
         let state = self.state.apply_and_fork(index, value);
 
-        let mut missing = state.empty_cells();
+        let missing = state.empty_cells();
         debug_assert!(!missing.contains(&index));
 
         GameState {
@@ -91,7 +92,7 @@ impl GameState {
         }
     }
 
-    pub fn valid_symbols(&self) -> &[u32; 9] {
+    pub fn valid_symbols(&self) -> &[Value; 9] {
         self.game.valid_symbols()
     }
 
@@ -100,7 +101,7 @@ impl GameState {
             .cell_at_xy(x, y, self.game.width, self.game.height)
     }
 
-    pub fn id(&self) -> &String {
+    pub fn id(&self) -> &StateId {
         &self.state.id
     }
 
@@ -246,6 +247,7 @@ impl GameState {
         x + y * self.game.width
     }
 
+    #[inline]
     pub fn index_to_xy(&self, index: usize) -> (usize, usize) {
         let x = index % self.game.width;
         let y = index / self.game.width;
