@@ -250,7 +250,7 @@ mod tests {
             let offset = y * 9;
             for x in 0u8..9 {
                 let index = (x + offset) as usize;
-                let value = Some((x + y * 10) as Value);
+                let value = Some(Value::try_from(x.max(y) + 1).unwrap());
                 array[index] = MaybeUninit::new(value);
             }
         }
@@ -264,7 +264,7 @@ mod tests {
     fn construction_works() {
         let board = crate::Game::new(create_matrix());
 
-        assert_eq!(board.cell(4, 2), Some(24));
+        assert_eq!(board.cell(4, 2), Value::try_from(5).ok());
         assert_eq!(board.cell(0, 5), None);
     }
 

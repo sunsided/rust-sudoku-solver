@@ -5,9 +5,10 @@
 /// ## Example
 ///
 /// ```
+/// # use sudoku::{hashset, join_btreeset};
 /// # fn main() {
 ///
-/// let set = join_btreeset!("a", "b");
+/// let set = join_btreeset!(hashset!("a"), hashset!("b"));
 /// assert!(set.contains("a"));
 /// assert!(set.contains("b"));
 /// assert!(!set.contains("c"));
@@ -34,9 +35,10 @@ macro_rules! join_btreeset {
 /// ## Example
 ///
 /// ```
+/// # use sudoku::{hashset, join_hashset};
 /// # fn main() {
 ///
-/// let set = join_hashset!("a", "b");
+/// let set = join_hashset!(hashset!("a"), hashset!("b"));
 /// assert!(set.contains("a"));
 /// assert!(set.contains("b"));
 /// assert!(!set.contains("c"));
@@ -57,14 +59,14 @@ macro_rules! join_hashset {
 }
 
 #[macro_export]
-/// Create a **BTreeSet** from a list of elements.
+/// Create a **HashSet** from a list of elements.
 /// Inspired by https://docs.rs/maplit/0.1.6/maplit/macro.btreeset.html.
 ///
 /// ## Example
 ///
 /// ```
+/// # use sudoku::hashset;
 /// # fn main() {
-///
 /// let set = hashset!("a", "b");
 /// assert!(set.contains("a"));
 /// assert!(set.contains("b"));

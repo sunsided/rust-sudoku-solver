@@ -8,7 +8,7 @@ pub struct State {
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Clone)]
 pub struct StateId {
-    repr: [usize; 9],
+    repr: [u32; 9],
 }
 
 impl State {
@@ -50,12 +50,14 @@ impl State {
     }
 
     fn make_id(values: &[ValueOption]) -> StateId {
-        let mut id = [0usize; 9];
+        // u32 is enough because 9 * 10^8 =   900_000_000
+        //   and u32::MAX is              = 4_294_967_295;
+        let mut id = [0u32; 9];
         let mut row_index = 0;
         let mut power = 0;
         for value in values.iter() {
             if let Some(value) = value {
-                id[row_index] += value.get() as usize * 10usize.pow(power);
+                id[row_index] += value.get() as u32 * 10u32.pow(power);
             }
 
             power += 1;

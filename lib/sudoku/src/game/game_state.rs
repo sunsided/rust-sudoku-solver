@@ -1,3 +1,4 @@
+use crate::game::bitset::IndexBitSet;
 use crate::game::prelude::*;
 use crate::game::state::StateId;
 use crate::game::Placement;
@@ -272,7 +273,7 @@ impl GameState {
     }
 
     fn validate_row(&self, y: Coordinate, allow_empty: bool) -> bool {
-        let mut values = HashSet::new(); // TODO: Replace with bit vector
+        let mut values = IndexBitSet::default();
         for item in self.get_row_values(0, y, false) {
             if values.contains(&item.value) {
                 return false;
@@ -283,7 +284,7 @@ impl GameState {
     }
 
     fn validate_column(&self, x: Coordinate, allow_empty: bool) -> bool {
-        let mut values = HashSet::new(); // TODO: Replace with bit vector
+        let mut values = IndexBitSet::default();
         for item in self.get_column_values(x, 0, false) {
             if values.contains(&item.value) {
                 return false;
@@ -294,7 +295,7 @@ impl GameState {
     }
 
     fn validate_group(&self, group: &IndexSet, allow_empty: bool) -> bool {
-        let mut values = HashSet::new(); // TODO: Replace with bit vector
+        let mut values = IndexBitSet::default();
         let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
         for item in self.get_group_values(x, y, false) {
             if values.contains(&item.value) {
