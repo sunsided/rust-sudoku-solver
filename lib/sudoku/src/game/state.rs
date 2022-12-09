@@ -6,7 +6,7 @@ pub struct State {
     values: [ValueOption; 81],
 }
 
-#[derive(Hash, Eq, PartialEq, Ord, PartialOrd, Copy, Clone)]
+#[derive(Hash, Eq, PartialEq, Ord, PartialOrd, Clone)]
 pub struct StateId {
     repr: [usize; 9],
 }
@@ -19,12 +19,12 @@ impl State {
     }
 
     pub fn cell_at_xy(&self, x: usize, y: usize, width: usize, height: usize) -> ValueOption {
-        assert!(x < width && y < height);
+        debug_assert!(x < width && y < height);
         self.values[index(x, y, width)]
     }
 
     pub fn cell_at_index(&self, index: usize, width: usize, height: usize) -> ValueOption {
-        assert!(index < width * height);
+        debug_assert!(index < width * height);
         self.values[index]
     }
 
