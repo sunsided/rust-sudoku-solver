@@ -1,9 +1,9 @@
 use crate::game::prelude::*;
 
-#[derive(Hash, Eq, PartialEq, Debug, Clone)]
+#[derive(Hash, Eq, PartialEq, Debug, Clone, Ord, PartialOrd)]
 pub struct Placement {
-    pub value: Value,
     pub index: Index,
+    pub value: Value,
 }
 
 impl Placement {

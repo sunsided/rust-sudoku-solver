@@ -20,8 +20,6 @@ pub fn solve(game: &GameState) -> GameState {
     let mut stack = Vec::new();
     stack.push((game.clone(), initial_candidates));
 
-    let mut tried_moves = HashSet::new();
-
     'stack: while let Some((mut state, mut candidates)) = stack.pop() {
         debug!("Stack depth: {}", stack.len());
 
@@ -65,13 +63,6 @@ pub fn solve(game: &GameState) -> GameState {
         for candidate_set in sorted_candidates {
             'candidates: for candidate in candidate_set.moves {
                 let key = (state.id().clone(), candidate.clone());
-
-                if tried_moves.contains(&key) {
-                    debug!("  ! Found move that was already tried; skipping.");
-                    continue 'candidates;
-                }
-
-                tried_moves.insert(key);
 
                 let branch = state.apply_and_fork(candidate.index, candidate.value);
                 let branch_candidates = find_move_candidates(&branch, &valid_symbols);
