@@ -12,8 +12,8 @@ pub fn find_move_candidates(
 ) -> SetOfMoveCandidates {
     let mut candidates = SetOfMoveCandidates::new();
 
-    for index in &state.empty_cells {
-        let missing_values = collect_missing_values(*index, state, valid_symbols);
+    for index in state.empty_cells.iter() {
+        let missing_values = collect_missing_values(index, state, valid_symbols);
         for value in missing_values {
             let r#move = Placement::new(value, index.clone());
             candidates.add(r#move);

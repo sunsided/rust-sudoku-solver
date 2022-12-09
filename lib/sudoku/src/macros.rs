@@ -86,3 +86,20 @@ macro_rules! hashset {
         }
     };
 }
+
+/// Create an **IndexBitSet** from a list of elements.
+/// Inspired by https://docs.rs/maplit/0.1.6/maplit/macro.btreeset.html.
+#[macro_export]
+macro_rules! indexes {
+    ($($key:expr,)+) => (indexes!($($key),+));
+
+    ( $($key:expr),* ) => {
+        {
+            let mut _set = crate::game::IndexBitSet::default();
+            $(
+                _set.insert($key);
+            )*
+            _set
+        }
+    };
+}

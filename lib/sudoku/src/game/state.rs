@@ -1,3 +1,4 @@
+use crate::game::indexbitset::IndexBitSet;
 use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
 
@@ -23,27 +24,28 @@ impl State {
         self.values[index(x, y, width)]
     }
 
-    pub fn cell_at_index(&self, index: usize, width: usize, height: usize) -> ValueOption {
-        debug_assert!(index < width * height);
-        self.values[index]
+    pub fn cell_at_index(&self, index: Index, width: usize, height: usize) -> ValueOption {
+        debug_assert!((index as usize) < (width * height));
+        self.values[index as usize]
     }
 
-    pub fn apply(&mut self, index: usize, value: Value) {
-        self.values[index] = Some(value);
+    pub fn apply(&mut self, index: Index, value: Value) {
+        self.values[index as usize] = Some(value);
     }
 
-    pub fn apply_and_fork(&self, index: usize, value: Value) -> State {
+    pub fn apply_and_fork(&self, index: Index, value: Value) -> State {
         let mut state = self.values.clone();
-        state[index] = Some(value);
+        state[index as usize] = Some(value);
         let id = Self::make_id(&self.values);
         State { values: state, id }
     }
 
-    pub fn empty_cells(&self) -> IndexSet {
-        let mut set = IndexSet::new(); // TODO: Use bitset
+    pub fn empty_cells(&self) -> IndexBitSet {
+        let mut set = IndexBitSet::default();
+        debug_assert!(self.values.len() <= 81);
         for index in 0..self.values.len() {
             if self.values[index].is_none() {
-                set.insert(index);
+                set.insert(index as Index);
             }
         }
         set

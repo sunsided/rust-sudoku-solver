@@ -1,9 +1,10 @@
 // TODO: https://stackoverflow.com/questions/27673674/is-there-a-way-to-create-a-data-type-that-only-accepts-a-range-of-values
 // TODO: See https://docs.rs/array2d/0.2.1/array2d/
 
+use crate::game::indexbitset::IndexBitSet;
 use crate::prelude::*;
 use crate::State;
-use std::collections::{BTreeSet, HashSet};
+use std::collections::BTreeSet;
 use std::mem::MaybeUninit;
 use std::rc::Rc;
 use std::vec::Vec;
@@ -14,8 +15,8 @@ pub struct Game {
     pub height: usize,
     valid_symbols: [Value; 9],
     initial_state: State,
-    pub groups: Vec<Rc<IndexSet>>,
-    group_lookup: [usize; 81],
+    pub groups: Vec<Rc<IndexBitSet>>,
+    group_lookup: [u8; 81],
 }
 
 impl Game {
@@ -34,7 +35,7 @@ impl Game {
         }
     }
 
-    pub fn new_with_groups<S: IntoValues>(state: S, groups: Vec<Rc<IndexSet>>) -> Game {
+    pub fn new_with_groups<S: IntoValues>(state: S, groups: Vec<Rc<IndexBitSet>>) -> Game {
         let symbols = build_default_symbols();
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game {
@@ -81,15 +82,15 @@ impl Game {
     #[rustfmt::skip]
     pub fn new_example_nonomino() -> Game {
         let mut index_set = Vec::new();
-        index_set.push(Rc::new(hashset!(0, 1, 2, 9, 10, 11, 18, 27, 28)));
-        index_set.push(Rc::new(hashset!(3, 12, 13, 14, 23, 24, 25, 34, 35)));
-        index_set.push(Rc::new(hashset!(4, 5, 6, 7, 8, 15, 16, 17, 26)));
-        index_set.push(Rc::new(hashset!(19, 20, 21, 22, 29, 36, 37, 38, 39)));
-        index_set.push(Rc::new(hashset!(30, 31, 32, 33, 40, 47, 48, 49, 50)));
-        index_set.push(Rc::new(hashset!(41, 42, 43, 44, 51, 58, 59, 60, 61)));
-        index_set.push(Rc::new(hashset!(45, 46, 55, 56, 57, 66, 67, 68, 77)));
-        index_set.push(Rc::new(hashset!(54, 63, 64, 65, 72, 73, 74, 75, 76)));
-        index_set.push(Rc::new(hashset!(52, 53, 62, 69, 70, 71, 78, 79, 80)));
+        index_set.push(Rc::new(indexes!(0, 1, 2, 9, 10, 11, 18, 27, 28)));
+        index_set.push(Rc::new(indexes!(3, 12, 13, 14, 23, 24, 25, 34, 35)));
+        index_set.push(Rc::new(indexes!(4, 5, 6, 7, 8, 15, 16, 17, 26)));
+        index_set.push(Rc::new(indexes!(19, 20, 21, 22, 29, 36, 37, 38, 39)));
+        index_set.push(Rc::new(indexes!(30, 31, 32, 33, 40, 47, 48, 49, 50)));
+        index_set.push(Rc::new(indexes!(41, 42, 43, 44, 51, 58, 59, 60, 61)));
+        index_set.push(Rc::new(indexes!(45, 46, 55, 56, 57, 66, 67, 68, 77)));
+        index_set.push(Rc::new(indexes!(54, 63, 64, 65, 72, 73, 74, 75, 76)));
+        index_set.push(Rc::new(indexes!(52, 53, 62, 69, 70, 71, 78, 79, 80)));
 
         let x = 0u8;
         Game::new_with_groups(
@@ -113,21 +114,21 @@ impl Game {
         let mut index_set = Vec::new();
 
         // Regular grid.
-        index_set.push(Rc::new(hashset!(0, 1, 2, 9, 10, 11, 18, 19, 20)));
-        index_set.push(Rc::new(hashset!(3, 4, 5, 12, 13, 14, 21, 22, 23)));
-        index_set.push(Rc::new(hashset!(6, 7, 8, 15, 16, 17, 24, 25, 26)));
-        index_set.push(Rc::new(hashset!(27, 28, 29, 36, 37, 38, 45, 46, 47)));
-        index_set.push(Rc::new(hashset!(30, 31, 32, 39, 40, 41, 48, 49, 50)));
-        index_set.push(Rc::new(hashset!(33, 34, 35, 42, 43, 44, 51, 52, 53)));
-        index_set.push(Rc::new(hashset!(54, 55, 56, 63, 64, 65, 72, 73, 74)));
-        index_set.push(Rc::new(hashset!(57, 58, 59, 66, 67, 68, 75, 76, 77)));
-        index_set.push(Rc::new(hashset!(60, 61, 62, 69, 70, 71, 78, 79, 80)));
+        index_set.push(Rc::new(indexes!(0, 1, 2, 9, 10, 11, 18, 19, 20)));
+        index_set.push(Rc::new(indexes!(3, 4, 5, 12, 13, 14, 21, 22, 23)));
+        index_set.push(Rc::new(indexes!(6, 7, 8, 15, 16, 17, 24, 25, 26)));
+        index_set.push(Rc::new(indexes!(27, 28, 29, 36, 37, 38, 45, 46, 47)));
+        index_set.push(Rc::new(indexes!(30, 31, 32, 39, 40, 41, 48, 49, 50)));
+        index_set.push(Rc::new(indexes!(33, 34, 35, 42, 43, 44, 51, 52, 53)));
+        index_set.push(Rc::new(indexes!(54, 55, 56, 63, 64, 65, 72, 73, 74)));
+        index_set.push(Rc::new(indexes!(57, 58, 59, 66, 67, 68, 75, 76, 77)));
+        index_set.push(Rc::new(indexes!(60, 61, 62, 69, 70, 71, 78, 79, 80)));
 
         // Windows
-        index_set.push(Rc::new(hashset!(10, 11, 12, 19, 20, 21, 28, 29, 30)));
-        index_set.push(Rc::new(hashset!(14, 15, 16, 23, 24, 25, 32, 33, 34)));
-        index_set.push(Rc::new(hashset!(46, 47, 48, 55, 56, 57, 64, 65, 66)));
-        index_set.push(Rc::new(hashset!(50, 51, 52, 59, 60, 61, 68, 69, 70)));
+        index_set.push(Rc::new(indexes!(10, 11, 12, 19, 20, 21, 28, 29, 30)));
+        index_set.push(Rc::new(indexes!(14, 15, 16, 23, 24, 25, 32, 33, 34)));
+        index_set.push(Rc::new(indexes!(46, 47, 48, 55, 56, 57, 64, 65, 66)));
+        index_set.push(Rc::new(indexes!(50, 51, 52, 59, 60, 61, 68, 69, 70)));
 
         let x = 0u8;
         Game::new_with_groups(
@@ -154,13 +155,13 @@ impl Game {
         self.initial_state.clone()
     }
 
-    pub fn group_id(&self, x: usize, y: usize) -> usize {
+    pub fn group_id(&self, x: usize, y: usize) -> GroupId {
         self.group_lookup[index(x, y, self.width)]
     }
 
-    pub fn group_at(&self, x: usize, y: usize) -> &IndexSet {
+    pub fn group_at(&self, x: usize, y: usize) -> &IndexBitSet {
         let idx = self.group_id(x, y);
-        &self.groups[idx]
+        &self.groups[idx as usize]
     }
 
     pub fn valid_symbols(&self) -> &[Value; 9] {
@@ -190,18 +191,22 @@ fn build_default_symbols() -> [Value; 9] {
 }
 
 /// Builds a default group rooted at the specified offsets.
-fn build_default_group(x_offset: usize, y_offset: usize) -> Rc<IndexSet> {
-    let mut set = HashSet::new();
+fn build_default_group(x_offset: usize, y_offset: usize) -> Rc<IndexBitSet> {
+    let mut set = IndexBitSet::default();
     for y in (0 + y_offset)..(3 + y_offset) {
-        set.insert(index(0 + x_offset, y, 9));
-        set.insert(index(1 + x_offset, y, 9));
-        set.insert(index(2 + x_offset, y, 9));
+        let a = index(0 + x_offset, y, 9) as _;
+        let b = index(1 + x_offset, y, 9) as _;
+        let c = index(2 + x_offset, y, 9) as _;
+
+        set.insert(a);
+        set.insert(b);
+        set.insert(c);
     }
     Rc::new(set)
 }
 
 /// Builds the set of default groups.
-fn build_set_of_default_groups() -> Vec<Rc<IndexSet>> {
+fn build_set_of_default_groups() -> Vec<Rc<IndexBitSet>> {
     let mut groups = Vec::new();
     for y in (0..9).step_by(3) {
         for x in (0..9).step_by(3) {
@@ -212,8 +217,8 @@ fn build_set_of_default_groups() -> Vec<Rc<IndexSet>> {
     groups
 }
 
-fn groups_valid(groups: &Vec<Rc<IndexSet>>) -> bool {
-    let mut set = BTreeSet::<usize>::new();
+fn groups_valid(groups: &Vec<Rc<IndexBitSet>>) -> bool {
+    let mut set = BTreeSet::<u8>::new();
     for group in groups {
         set.extend(group.iter());
     }
@@ -221,19 +226,20 @@ fn groups_valid(groups: &Vec<Rc<IndexSet>>) -> bool {
 }
 
 /// Builds a reverse index of each cell to its group.
-fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexSet>>) -> [usize; 81] {
+fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexBitSet>>) -> [u8; 81] {
     assert!(groups_valid(&groups));
 
-    let mut group_lookup: [MaybeUninit<usize>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
+    let mut group_lookup: [MaybeUninit<u8>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
+    debug_assert!(groups.len() < 81);
     for gid in 0..groups.len() {
         let group = &groups[gid];
         for index in group.iter() {
-            group_lookup[*index] = MaybeUninit::new(gid);
+            group_lookup[index as usize] = MaybeUninit::new(gid as u8);
         }
     }
 
-    unsafe { std::mem::transmute::<_, [usize; 81]>(group_lookup) }
+    unsafe { std::mem::transmute::<_, [u8; 81]>(group_lookup) }
 }
 
 #[cfg(test)]
@@ -273,9 +279,9 @@ mod tests {
         for y in (0usize..9).step_by(3) {
             for x in (0usize..9).step_by(3) {
                 let set = build_default_group(x, y);
-                assert_eq!(set.contains(&index(0 + x, 0 + y, 9)), true);
-                assert_eq!(set.contains(&index(0 + x, 2 + y, 9)), true);
-                assert_eq!(set.contains(&index(2 + x, 2 + y, 9)), true);
+                assert_eq!(set.contains(index(0 + x, 0 + y, 9) as _), true);
+                assert_eq!(set.contains(index(0 + x, 2 + y, 9) as _), true);
+                assert_eq!(set.contains(index(2 + x, 2 + y, 9) as _), true);
             }
         }
     }
@@ -285,8 +291,8 @@ mod tests {
         for y in (0usize..9).step_by(3) {
             for x in (0usize..9).step_by(3) {
                 let set = build_default_group(x, y);
-                assert_eq!(set.contains(&index(0 + x, 3 + y, 9)), false);
-                assert_eq!(set.contains(&index(3 + x, 0 + y, 9)), false);
+                assert_eq!(set.contains(index(0 + x, 3 + y, 9) as _), false);
+                assert_eq!(set.contains(index(3 + x, 0 + y, 9) as _), false);
             }
         }
     }
@@ -297,9 +303,9 @@ mod tests {
         let group = board.group_at(4, 4).clone();
 
         for y in 3..6 {
-            assert!(group.contains(&index(3, y, 9)));
-            assert!(group.contains(&index(4, y, 9)));
-            assert!(group.contains(&index(5, y, 9)));
+            assert!(group.contains(index(3, y, 9) as _));
+            assert!(group.contains(index(4, y, 9) as _));
+            assert!(group.contains(index(5, y, 9) as _));
         }
     }
 }
