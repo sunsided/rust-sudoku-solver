@@ -20,7 +20,7 @@ pub struct Game {
 
 impl Game {
     /// Initializes a standard Sudoku board from values in row-major order.
-    pub fn new(state: [ValueOption; 81]) -> Game {
+    pub fn new<S: IntoValues>(state: S) -> Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
@@ -28,20 +28,20 @@ impl Game {
             width: 9,
             height: 9,
             valid_symbols: symbols,
-            initial_state: State::new(state),
+            initial_state: State::new(state.into()),
             groups,
             group_lookup,
         }
     }
 
-    pub fn new_with_groups(state: [ValueOption; 81], groups: Vec<Rc<IndexSet>>) -> Game {
+    pub fn new_with_groups<S: IntoValues>(state: S, groups: Vec<Rc<IndexSet>>) -> Game {
         let symbols = build_default_symbols();
         let group_lookup = build_default_index_to_group_lookup(&groups);
         Game {
             width: 9,
             height: 9,
             valid_symbols: symbols,
-            initial_state: State::new(state),
+            initial_state: State::new(state.into()),
             groups,
             group_lookup,
         }
@@ -61,22 +61,24 @@ impl Game {
         }
     }
 
+    #[rustfmt::skip]
     pub fn new_example() -> Game {
-        Game::new(
-            #[rustfmt_skip] [
-            V(5), V(3), None, None, V(7), None, None, None, None,
-            V(6), None, None, V(1), V(9), V(5), None, None, None,
-            None, V(9), V(8), None, None, None, None, V(6), None,
-            V(8), None, None, None, V(6), None, None, None, V(3),
-            V(4), None, None, V(8), None, V(3), None, None, V(1),
-            V(7), None, None, None, V(2), None, None, None, V(6),
-            None, V(6), None, None, None, None, V(2), V(8), None,
-            None, None, None, V(4), V(1), V(9), None, None, V(5),
-            None, None, None, None, V(8), None, None, V(7), V(9),
+        let x = 0u8;
+        Game::new([
+            5, 3, x, x, 7, x, x, x, x,
+            6, x, x, 1, 9, 5, x, x, x,
+            x, 9, 8, x, x, x, x, 6, x,
+            8, x, x, x, 6, x, x, x, 3,
+            4, x, x, 8, x, 3, x, x, 1,
+            7, x, x, x, 2, x, x, x, 6,
+            x, 6, x, x, x, x, 2, 8, x,
+            x, x, x, 4, 1, 9, x, x, 5,
+            x, x, x, x, 8, x, x, 7, 9,
         ],
         )
     }
 
+    #[rustfmt::skip]
     pub fn new_example_nonomino() -> Game {
         let mut index_set = Vec::new();
         index_set.push(Rc::new(hashset!(0, 1, 2, 9, 10, 11, 18, 27, 28)));
@@ -89,94 +91,24 @@ impl Game {
         index_set.push(Rc::new(hashset!(54, 63, 64, 65, 72, 73, 74, 75, 76)));
         index_set.push(Rc::new(hashset!(52, 53, 62, 69, 70, 71, 78, 79, 80)));
 
+        let x = 0u8;
         Game::new_with_groups(
             [
-                V(3),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                V(4),
-                None,
-                None,
-                V(2),
-                None,
-                V(6),
-                None,
-                V(1),
-                None,
-                None,
-                None,
-                V(1),
-                None,
-                V(9),
-                None,
-                V(8),
-                None,
-                V(2),
-                None,
-                None,
-                None,
-                V(5),
-                None,
-                None,
-                None,
-                V(6),
-                None,
-                None,
-                None,
-                V(2),
-                None,
-                None,
-                None,
-                None,
-                None,
-                V(1),
-                None,
-                None,
-                None,
-                V(9),
-                None,
-                None,
-                None,
-                V(8),
-                None,
-                None,
-                None,
-                V(8),
-                None,
-                V(3),
-                None,
-                V(4),
-                None,
-                V(6),
-                None,
-                None,
-                None,
-                V(4),
-                None,
-                V(1),
-                None,
-                V(9),
-                None,
-                None,
-                V(5),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                V(7),
+                3, x, x, x, x, x, x, x, 4,
+                x, x, 2, x, 6, x, 1, x, x,
+                x, 1, x, 9, x, 8, x, 2, x,
+                x, x, 5, x, x, x, 6, x, x,
+                x, 2, x, x, x, x, x, 1, x,
+                x, x, 9, x, x, x, 8, x, x,
+                x, 8, x, 3, x, 4, x, 6, x,
+                x, x, 4, x, 1, x, 9, x, x,
+                5, x, x, x, x, x, x, x, 7,
             ],
             index_set,
         )
     }
 
+    #[rustfmt::skip]
     pub fn new_example_hypersudoku() -> Game {
         let mut index_set = Vec::new();
 
@@ -197,89 +129,18 @@ impl Game {
         index_set.push(Rc::new(hashset!(46, 47, 48, 55, 56, 57, 64, 65, 66)));
         index_set.push(Rc::new(hashset!(50, 51, 52, 59, 60, 61, 68, 69, 70)));
 
+        let x = 0u8;
         Game::new_with_groups(
             [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                V(1),
-                None,
-                None,
-                None,
-                V(2),
-                None,
-                None,
-                None,
-                None,
-                V(3),
-                V(4),
-                None,
-                None,
-                None,
-                None,
-                V(5),
-                V(1),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                V(6),
-                V(5),
-                None,
-                None,
-                None,
-                V(7),
-                None,
-                V(3),
-                None,
-                None,
-                None,
-                V(8),
-                None,
-                None,
-                None,
-                V(3),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                V(8),
-                None,
-                None,
-                None,
-                None,
-                V(5),
-                V(8),
-                None,
-                None,
-                None,
-                None,
-                V(9),
-                None,
-                None,
-                V(6),
-                V(9),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
+                x, x, x, x, x, x, x, 1, x,
+                x, x, 2, x, x, x, x, 3, 4,
+                x, x, x, x, 5, 1, x, x, x,
+                x, x, x, x, x, 6, 5, x, x,
+                x, 7, x, 3, x, x, x, 8, x,
+                x, x, 3, x, x, x, x, x, x,
+                x, x, x, x, 8, x, x, x, x,
+                5, 8, x, x, x, x, 9, x, x,
+                6, 9, x, x, x, x, x, x, x,
             ],
             index_set,
         )
@@ -443,10 +304,25 @@ mod tests {
     }
 }
 
-#[inline]
-const fn V(value: u8) -> Option<Value> {
-    if value == 0 {
-        panic!("Zero is not a valid value");
+pub trait IntoValues {
+    fn into(self) -> [ValueOption; 81];
+}
+
+impl IntoValues for [u8; 81] {
+    fn into(self) -> [ValueOption; 81] {
+        let mut values = [None; 81];
+        for (i, v) in self.into_iter().enumerate() {
+            match v {
+                0 => values[i] = None,
+                x => values[i] = Some(Value::try_from(x).unwrap()),
+            }
+        }
+        values
     }
-    Some(unsafe { Value::new_unchecked(value) })
+}
+
+impl IntoValues for [ValueOption; 81] {
+    fn into(self) -> [ValueOption; 81] {
+        self
+    }
 }
