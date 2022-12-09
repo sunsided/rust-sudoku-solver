@@ -33,6 +33,11 @@ pub fn solve(game: &GameState) -> GameState {
             continue 'stack;
         }
 
+        if state.validate(false) {
+            debug!("Solved.");
+            return state;
+        }
+
         let mut applied_some = true;
         while applied_some {
             applied_some = false;
@@ -60,7 +65,7 @@ pub fn solve(game: &GameState) -> GameState {
         let mut sorted_candidates: Vec<MoveCandidates> = Vec::from_iter(candidates.iter());
         sorted_candidates.sort_unstable_by_key(|v| v.moves.len());
 
-        'candidate_set: for candidate_set in sorted_candidates {
+        for candidate_set in sorted_candidates {
             'candidates: for candidate in candidate_set.moves {
                 let key = (state.id().clone(), candidate.clone());
 
@@ -68,19 +73,20 @@ pub fn solve(game: &GameState) -> GameState {
                 let branch = state.apply_and_fork(candidate.index, candidate.value);
                 let branch_candidates = find_move_candidates(&branch, &valid_symbols);
 
-                // We remove (not eliminate!) the candidate we just forked and requeue the current
-                // branch if it still contains options.
-                candidates.forget_candidate(&candidate);
-                if !candidates.is_empty() {
-                    debug!("  + Pushing base branch");
-                    stack.push((state, candidates));
-                }
-
+                debug_assert!(!branch_candidates.is_empty());
                 debug!(
                     "  + Branching; {} candidates to explore",
                     branch_candidates.total_len()
                 );
                 stack.push((branch, branch_candidates));
+
+                // We remove (not eliminate!) the candidate we just forked and requeue the current
+                // branch if it still contains options.
+                candidates.forget_candidate(&candidate);
+                if !candidates.is_empty() {
+                    debug!("  + Pushing base branch");
+                    stack.push((state.clone(), candidates.clone()));
+                }
 
                 continue 'stack;
             }
