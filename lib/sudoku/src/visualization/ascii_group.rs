@@ -31,7 +31,7 @@ fn print_cell(data: &GameState, x: usize, y: usize) {
         '@', '#', '*', '%',
     ];
 
-    print!("{}", tokens[id % tokens.len()]);
+    print!("{}", tokens[(id as usize) % tokens.len()]);
     print_spaces(x);
 }
 

@@ -1,3 +1,4 @@
+use crate::game::indexbitset::IndexBitSet;
 use crate::game::prelude::*;
 use std::hash::{Hash, Hasher};
 
@@ -8,7 +9,7 @@ pub struct State {
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Clone)]
 pub struct StateId {
-    repr: [usize; 9],
+    repr: [u32; 9],
 }
 
 impl State {
@@ -23,39 +24,42 @@ impl State {
         self.values[index(x, y, width)]
     }
 
-    pub fn cell_at_index(&self, index: usize, width: usize, height: usize) -> ValueOption {
-        debug_assert!(index < width * height);
-        self.values[index]
+    pub fn cell_at_index(&self, index: Index, width: usize, height: usize) -> ValueOption {
+        debug_assert!((index as usize) < (width * height));
+        self.values[index as usize]
     }
 
-    pub fn apply(&mut self, index: usize, value: Value) {
-        self.values[index] = Some(value);
+    pub fn apply(&mut self, index: Index, value: Value) {
+        self.values[index as usize] = Some(value);
     }
 
-    pub fn apply_and_fork(&self, index: usize, value: Value) -> State {
+    pub fn apply_and_fork(&self, index: Index, value: Value) -> State {
         let mut state = self.values.clone();
-        state[index] = Some(value);
+        state[index as usize] = Some(value);
         let id = Self::make_id(&self.values);
         State { values: state, id }
     }
 
-    pub fn empty_cells(&self) -> IndexSet {
-        let mut set = IndexSet::new(); // TODO: Use bitset
+    pub fn empty_cells(&self) -> IndexBitSet {
+        let mut set = IndexBitSet::default();
+        debug_assert!(self.values.len() <= 81);
         for index in 0..self.values.len() {
             if self.values[index].is_none() {
-                set.insert(index);
+                set.insert(index as Index);
             }
         }
         set
     }
 
     fn make_id(values: &[ValueOption]) -> StateId {
-        let mut id = [0usize; 9];
+        // u32 is enough because 9 * 10^8 =   900_000_000
+        //   and u32::MAX is              = 4_294_967_295;
+        let mut id = [0u32; 9];
         let mut row_index = 0;
         let mut power = 0;
         for value in values.iter() {
             if let Some(value) = value {
-                id[row_index] += value.get() as usize * 10usize.pow(power);
+                id[row_index] += value.get() as u32 * 10u32.pow(power);
             }
 
             power += 1;

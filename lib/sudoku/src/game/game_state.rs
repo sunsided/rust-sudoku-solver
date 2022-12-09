@@ -1,6 +1,7 @@
+use crate::game::indexbitset::IndexBitSet;
 use crate::game::prelude::*;
 use crate::game::state::StateId;
-use crate::game::Placement;
+use crate::game::{Placement, ValueBitSet};
 use crate::{Game, State};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
@@ -14,7 +15,7 @@ pub enum CollectType {
 }
 
 pub struct GameState {
-    pub empty_cells: IndexSet,
+    pub empty_cells: IndexBitSet,
     pub game: Rc<Game>,
     pub state: State,
 }
@@ -70,20 +71,20 @@ impl GameState {
         join_hashset!(column, row, group)
     }
 
-    pub fn apply(&mut self, index: usize, value: Value) {
+    pub fn apply(&mut self, index: u8, value: Value) {
         self.state.apply(index, value);
-        self.empty_cells.remove(&index);
+        self.empty_cells.remove(index);
     }
 
     pub fn apply_move(&mut self, r#move: &Placement) {
         self.apply(r#move.index, r#move.value)
     }
 
-    pub fn apply_and_fork(&self, index: usize, value: Value) -> GameState {
+    pub fn apply_and_fork(&self, index: Index, value: Value) -> GameState {
         let state = self.state.apply_and_fork(index, value);
 
         let missing = state.empty_cells();
-        debug_assert!(!missing.contains(&index));
+        debug_assert!(!missing.contains(index));
 
         GameState {
             game: self.game.clone(),
@@ -185,11 +186,11 @@ impl GameState {
         let index_reference = self.xy_to_index(x, y);
 
         for index in group.iter() {
-            if exclude_self && (*index == index_reference) {
+            if exclude_self && (index == index_reference) {
                 continue;
             }
 
-            self.collect_if_set(&mut set, *index);
+            self.collect_if_set(&mut set, index);
         }
         set
     }
@@ -206,11 +207,11 @@ impl GameState {
         let index_reference = self.xy_to_index(x, y);
 
         for index in group.iter() {
-            if exclude_self && (*index == index_reference) {
+            if exclude_self && (index == index_reference) {
                 continue;
             }
 
-            self.collect_index_if(&mut set, *index, &how);
+            self.collect_index_if(&mut set, index, &how);
         }
         set
     }
@@ -243,14 +244,14 @@ impl GameState {
         }
     }
 
-    pub fn xy_to_index(&self, x: usize, y: usize) -> usize {
-        x + y * self.game.width
+    pub fn xy_to_index(&self, x: usize, y: usize) -> Index {
+        (x + y * self.game.width) as Index
     }
 
     #[inline]
-    pub fn index_to_xy(&self, index: usize) -> (usize, usize) {
-        let x = index % self.game.width;
-        let y = index / self.game.width;
+    pub fn index_to_xy(&self, index: Index) -> (usize, usize) {
+        let x = (index as usize) % self.game.width;
+        let y = (index as usize) / self.game.width;
         (x, y)
     }
 
@@ -272,9 +273,9 @@ impl GameState {
     }
 
     fn validate_row(&self, y: Coordinate, allow_empty: bool) -> bool {
-        let mut values = HashSet::new(); // TODO: Replace with bit vector
+        let mut values = ValueBitSet::default();
         for item in self.get_row_values(0, y, false) {
-            if values.contains(&item.value) {
+            if values.contains(item.value) {
                 return false;
             }
             values.insert(item.value);
@@ -283,9 +284,9 @@ impl GameState {
     }
 
     fn validate_column(&self, x: Coordinate, allow_empty: bool) -> bool {
-        let mut values = HashSet::new(); // TODO: Replace with bit vector
+        let mut values = ValueBitSet::default();
         for item in self.get_column_values(x, 0, false) {
-            if values.contains(&item.value) {
+            if values.contains(item.value) {
                 return false;
             }
             values.insert(item.value);
@@ -293,11 +294,11 @@ impl GameState {
         values.len() == self.game.height || allow_empty
     }
 
-    fn validate_group(&self, group: &IndexSet, allow_empty: bool) -> bool {
-        let mut values = HashSet::new(); // TODO: Replace with bit vector
-        let (x, y) = self.index_to_xy(*group.iter().next().unwrap());
+    fn validate_group(&self, group: &IndexBitSet, allow_empty: bool) -> bool {
+        let mut values = ValueBitSet::default();
+        let (x, y) = self.index_to_xy(group.iter().next().unwrap());
         for item in self.get_group_values(x, y, false) {
-            if values.contains(&item.value) {
+            if values.contains(item.value) {
                 return false;
             }
             values.insert(item.value);
