@@ -96,17 +96,8 @@ impl Hash for State {
 
 impl PartialEq for State {
     fn eq(&self, other: &Self) -> bool {
-        let values = &self.values;
-        if values.len() != other.values.len() {
-            return false;
-        }
-
-        let mut equality = true;
-        for index in 0..values.len() {
-            equality &= values[index].eq(&other.values[index])
-        }
-
-        equality
+        // self.values.eq(&other.values)
+        self.id.eq(&other.id)
     }
 }
 
