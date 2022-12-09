@@ -44,7 +44,7 @@ pub fn solve(game: &GameState) -> GameState {
                     match apply_simple_strategy_repeatedly(strategy, &mut state, &mut candidates) {
                         Ok(applied) => applied,
                         Err(_) => {
-                            // branch is invalid
+                            // branch has become invalid
                             continue 'stack;
                         }
                     };
@@ -60,16 +60,17 @@ pub fn solve(game: &GameState) -> GameState {
         let mut sorted_candidates: Vec<MoveCandidates> = Vec::from_iter(candidates.iter());
         sorted_candidates.sort_unstable_by_key(|v| v.moves.len());
 
-        for candidate_set in sorted_candidates {
+        'candidate_set: for candidate_set in sorted_candidates {
             'candidates: for candidate in candidate_set.moves {
                 let key = (state.id().clone(), candidate.clone());
 
+                // Apply a move candidate and fork the game state.
                 let branch = state.apply_and_fork(candidate.index, candidate.value);
                 let branch_candidates = find_move_candidates(&branch, &valid_symbols);
 
-                // We remove (not eliminate!) the candidate we just tried and requeue the current
+                // We remove (not eliminate!) the candidate we just forked and requeue the current
                 // branch if it still contains options.
-                candidates.remove_candidate(&candidate);
+                candidates.forget_candidate(&candidate);
                 if !candidates.is_empty() {
                     debug!("  + Pushing base branch");
                     stack.push((state, candidates));
@@ -80,6 +81,7 @@ pub fn solve(game: &GameState) -> GameState {
                     branch_candidates.total_len()
                 );
                 stack.push((branch, branch_candidates));
+
                 continue 'stack;
             }
         }
@@ -144,7 +146,7 @@ fn apply_simple_strategy_once(
 fn eliminate(state: &GameState, candidates: &mut SetOfMoveCandidates, placement: &Placement) {
     let peers = state.peer_indexes_by_index(placement.index, false, CollectType::All);
     for peer_index in peers {
-        candidates.remove_candidate(&Placement::new(placement.value, peer_index));
+        candidates.forget_candidate(&Placement::new(placement.value, peer_index));
     }
 }
 

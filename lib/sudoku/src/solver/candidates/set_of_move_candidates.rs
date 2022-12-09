@@ -38,7 +38,7 @@ impl SetOfMoveCandidates {
             .insert(candidate);
     }
 
-    pub fn remove_candidate(&mut self, candidate: &Placement) -> bool {
+    pub fn forget_candidate(&mut self, candidate: &Placement) -> bool {
         self.moves.entry(candidate.index).and_modify(move |x| {
             x.remove(candidate);
         });
