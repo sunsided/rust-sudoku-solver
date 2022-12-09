@@ -6,7 +6,7 @@ pub struct State {
     values: [ValueOption; 81],
 }
 
-#[derive(Hash, Eq, PartialEq, Ord, PartialOrd, Clone)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Clone)]
 pub struct StateId {
     repr: [usize; 9],
 }
@@ -71,6 +71,14 @@ impl State {
     }
 }
 
+impl Hash for StateId {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for v in self.repr {
+            v.hash(state)
+        }
+    }
+}
+
 impl Clone for State {
     fn clone(&self) -> Self {
         State {
@@ -82,10 +90,7 @@ impl Clone for State {
 
 impl Hash for State {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let values = &self.values;
-        for i in 0..values.len() {
-            values[i].hash(state);
-        }
+        self.id.hash(state)
     }
 }
 
