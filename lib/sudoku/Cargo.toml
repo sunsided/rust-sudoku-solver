@@ -7,4 +7,5 @@ edition = "2021"
 [dependencies]
 visitor = { path = "../visitor" }
 log = "0.4.17"
+thiserror = "1.0.37"
 

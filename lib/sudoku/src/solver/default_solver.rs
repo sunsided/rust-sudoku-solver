@@ -6,13 +6,14 @@ use std::iter::IntoIterator;
 use crate::game::{CollectType, Placement};
 use crate::prelude::*;
 use crate::solver::candidates::{find_move_candidates, MoveCandidates, SetOfMoveCandidates};
-use crate::solver::steps::{hidden_singles, lone_singles};
+use crate::solver::steps::{
+    hidden_singles, lone_singles, naked_twins, StrategyError, StrategyFn, StrategyMove,
+};
 use crate::GameState;
 
 pub fn solve(game: &GameState) -> GameState {
     // Strategies to apply in the given order.
-    // TODO: Apply naked twins strategy
-    let strategies: Vec<StrategyFn> = vec![lone_singles, hidden_singles];
+    let strategies: Vec<StrategyFn> = vec![lone_singles, hidden_singles, naked_twins];
 
     let valid_symbols = collect_valid_symbols(game);
     let initial_candidates = find_move_candidates(&game, &valid_symbols);
@@ -66,20 +67,7 @@ pub fn solve(game: &GameState) -> GameState {
         sorted_candidates.sort_unstable_by_key(|v| v.moves.len());
 
         for candidate_set in sorted_candidates {
-            'candidates: for candidate in candidate_set.moves {
-                let key = (state.id().clone(), candidate.clone());
-
-                // Apply a move candidate and fork the game state.
-                let branch = state.apply_and_fork(candidate.index, candidate.value);
-                let branch_candidates = find_move_candidates(&branch, &valid_symbols);
-
-                debug_assert!(!branch_candidates.is_empty());
-                debug!(
-                    "  + Branching; {} candidates to explore",
-                    branch_candidates.total_len()
-                );
-                stack.push((branch, branch_candidates));
-
+            for candidate in candidate_set.moves {
                 // We remove (not eliminate!) the candidate we just forked and requeue the current
                 // branch if it still contains options.
                 candidates.forget_candidate(&candidate);
@@ -87,6 +75,16 @@ pub fn solve(game: &GameState) -> GameState {
                     debug!("  + Pushing base branch");
                     stack.push((state.clone(), candidates.clone()));
                 }
+
+                // Apply a move candidate and fork the game state.
+                let branch = state.apply_and_fork(candidate.index, candidate.value);
+                let branch_candidates = find_move_candidates(&branch, &valid_symbols);
+                debug_assert!(!branch_candidates.is_empty());
+                debug!(
+                    "  + Branching; {} candidates to explore",
+                    branch_candidates.total_len()
+                );
+                stack.push((branch, branch_candidates));
 
                 continue 'stack;
             }
@@ -101,8 +99,6 @@ pub fn solve(game: &GameState) -> GameState {
 
     unreachable!()
 }
-
-pub type StrategyFn = fn(&mut GameState, &SetOfMoveCandidates) -> Vec<Placement>;
 
 fn apply_simple_strategy_repeatedly(
     strategy: &StrategyFn,
@@ -129,12 +125,29 @@ fn apply_simple_strategy_once(
     mut state: &mut GameState,
     mut candidates: &mut SetOfMoveCandidates,
 ) -> Result<bool, bool> {
-    let applied = strategy(&mut state, &candidates);
-    if applied.is_empty() {
-        return Ok(false);
+    let applied = match strategy(&mut state, &candidates) {
+        Ok(strategy_move) => strategy_move,
+        Err(StrategyError::BoardInvalid) => {
+            debug!("  ! Branch is invalid.");
+            return Err(false);
+        }
+    };
+
+    match applied {
+        StrategyMove::None => {
+            return Ok(false);
+        }
+        StrategyMove::Applied(applied) => {
+            debug_assert!(!applied.is_empty());
+            eliminate_many(&state, &mut candidates, applied.into_iter());
+        }
+        StrategyMove::EliminateOnly(eliminate) => {
+            for candidate in eliminate.into_iter() {
+                candidates.forget_candidate(&candidate);
+            }
+        }
     }
 
-    eliminate_many(&state, &mut candidates, applied.into_iter());
     debug!(
         "  - Candidates left after applying strategy: {}.",
         candidates.total_len()

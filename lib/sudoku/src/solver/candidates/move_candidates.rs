@@ -1,5 +1,5 @@
 use crate::game::Placement;
-use crate::prelude::Index;
+use crate::prelude::{Index, Value};
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
@@ -22,5 +22,20 @@ impl MoveCandidates {
 
     pub fn is_trivial(&self) -> bool {
         self.moves.len() == 1
+    }
+
+    /// Gets all possible placeable values for this move
+    /// as a [`HashSet`].
+    pub fn value_hashset(&self) -> HashSet<Value> {
+        self.moves.iter().map(|p| p.value).collect()
+    }
+
+    /// Gets the number of possible value placements.
+    pub fn len(&self) -> usize {
+        self.moves.len()
+    }
+
+    pub fn empty(&self) -> bool {
+        self.moves.is_empty()
     }
 }

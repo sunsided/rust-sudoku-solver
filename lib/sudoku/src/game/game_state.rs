@@ -216,6 +216,13 @@ impl GameState {
         set
     }
 
+    pub fn get_peer_values(&self, index: Index) -> HashSet<Value> {
+        self.peers_by_index(index, true)
+            .iter()
+            .map(|p| p.value)
+            .collect()
+    }
+
     fn cell_at_index(&self, index: Index) -> ValueOption {
         self.state
             .cell_at_index(index, self.game.width, self.game.height)
