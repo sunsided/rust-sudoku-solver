@@ -1,5 +1,7 @@
 # A Sudoku Solver in Rust
 
+**Deprecation note:** A newer version of this project is available at [sunsided/sudoku2-rs](https://github.com/sunsided/sudoku2-rs).
+
 This project is an attempt at familiarizing myself with Rust in terms of both the
 language itself, patterns and workspaces. To do something at least remotely meaningful,
 it implements a Sudoku solver.
@@ -8,7 +10,7 @@ Only trivial strategies (such as lone and hidden singles) are implemented. If th
 sufficient, state-space search is used to explore the solutions. For computational efficiency, the candidate
 set mutable per branch; however, there's a bug hidden somewhere that will not explore the full set of
 branches; combined with the non-deterministic sorting strategies used, this will erratically
-report some Sudokus as unsolvable when - in really - the aren't, and futher runs of the solver
+report some Sudokus as unsolvable when - in really - they aren't, and futher runs of the solver
 _will_ find a solution.
 
 In any case, given that this is just a toy project to get used to Rust, I may or may not attempt to fix it in the future.
