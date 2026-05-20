@@ -1,6 +1,6 @@
 use crate::game::CollectType;
 use crate::prelude::{Index, Value};
-use crate::solver::candidates::{MoveCandidates, SetOfMoveCandidates};
+use crate::solver::candidates::SetOfMoveCandidates;
 use crate::solver::steps::{StrategyError, StrategyMove};
 use crate::{GameState, Placement};
 use log::trace;

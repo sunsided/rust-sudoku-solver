@@ -1,7 +1,6 @@
-use crate::game::Placement;
+use crate::GameState;
 use crate::solver::candidates::SetOfMoveCandidates;
 use crate::solver::steps::{StrategyError, StrategyMove};
-use crate::GameState;
 use log::trace;
 
 pub fn lone_singles(

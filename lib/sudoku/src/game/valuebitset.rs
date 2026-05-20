@@ -78,7 +78,7 @@ impl ValueBitSet {
         self.state == 0
     }
 
-    pub fn iter(&self) -> ValueBitSetIter {
+    pub fn iter(&self) -> ValueBitSetIter<'_> {
         ValueBitSetIter {
             value: self,
             index: 1, // Zero is invalid!
@@ -147,11 +147,9 @@ impl From<&[ValueOption]> for ValueBitSet {
     #[inline]
     fn from(values: &[ValueOption]) -> Self {
         let mut state = 0u16;
-        for value in values {
-            if let Some(value) = value {
-                // Since the value is a non-zero u8 we subtract one for the first bit.
-                state |= 1u16 << (value.get() - 1);
-            }
+        for value in values.iter().filter_map(|v| v.as_ref()) {
+            // Since the value is a non-zero u8 we subtract one for the first bit.
+            state |= 1u16 << (value.get() - 1);
         }
         Self { state }
     }

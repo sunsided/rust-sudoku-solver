@@ -95,7 +95,7 @@ macro_rules! indexes {
 
     ( $($key:expr),* ) => {
         {
-            let mut _set = crate::game::IndexBitSet::default();
+            let mut _set = $crate::game::IndexBitSet::default();
             $(
                 _set.insert($key);
             )*

@@ -3,20 +3,20 @@ use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::iter::IntoIterator;
 
+use crate::GameState;
 use crate::game::{CollectType, Placement};
 use crate::prelude::*;
 use crate::solver::candidates::{find_move_candidates, MoveCandidates, SetOfMoveCandidates};
 use crate::solver::steps::{
     hidden_singles, lone_singles, naked_twins, StrategyError, StrategyFn, StrategyMove,
 };
-use crate::GameState;
 
 pub fn solve(game: &GameState) -> GameState {
     // Strategies to apply in the given order.
     let strategies: Vec<StrategyFn> = vec![lone_singles, hidden_singles, naked_twins];
 
     let valid_symbols = collect_valid_symbols(game);
-    let initial_candidates = find_move_candidates(&game, &valid_symbols);
+    let initial_candidates = find_move_candidates(game, &valid_symbols);
 
     let mut stack = Vec::new();
     stack.push((game.clone(), initial_candidates));
@@ -122,10 +122,10 @@ fn apply_simple_strategy_repeatedly(
 
 fn apply_simple_strategy_once(
     strategy: &StrategyFn,
-    mut state: &mut GameState,
-    mut candidates: &mut SetOfMoveCandidates,
+    state: &mut GameState,
+    candidates: &mut SetOfMoveCandidates,
 ) -> Result<bool, bool> {
-    let applied = match strategy(&mut state, &candidates) {
+    let applied = match strategy(state, candidates) {
         Ok(strategy_move) => strategy_move,
         Err(StrategyError::BoardInvalid) => {
             debug!("  ! Branch is invalid.");
@@ -139,7 +139,7 @@ fn apply_simple_strategy_once(
         }
         StrategyMove::Applied(applied) => {
             debug_assert!(!applied.is_empty());
-            eliminate_many(&state, &mut candidates, applied.into_iter());
+            eliminate_many(state, candidates, applied.into_iter());
         }
         StrategyMove::EliminateOnly(eliminate) => {
             for candidate in eliminate.into_iter() {

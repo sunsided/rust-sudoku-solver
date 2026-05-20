@@ -1,7 +1,8 @@
 use clap::{Arg, ArgGroup, Command};
 
 pub fn build_command() -> Command {
-    let command = Command::new("Sudoku Solver Example")
+    
+    Command::new("Sudoku Solver Example")
         .version("0.1.0")
         .author("Markus Mayer")
         .arg(
@@ -25,6 +26,5 @@ pub fn build_command() -> Command {
                 .action(clap::ArgAction::SetTrue)
                 .group("type"),
         )
-        .group(ArgGroup::new("type").required(true));
-    command
+        .group(ArgGroup::new("type").required(true))
 }

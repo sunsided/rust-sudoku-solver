@@ -3,6 +3,12 @@ use visitor::prelude::*;
 
 pub struct AsciiBoardPrinter {}
 
+impl Default for AsciiBoardPrinter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AsciiBoardPrinter {
     pub fn new() -> AsciiBoardPrinter {
         AsciiBoardPrinter {}
@@ -36,14 +42,14 @@ fn print_spaces(x: usize) {
         return;
     }
     print!(" ");
-    if (x + 1) % 3 == 0 {
+    if (x + 1).is_multiple_of(3) {
         print!("  ")
     }
 }
 
 fn print_line_break(y: usize) {
     println!();
-    if (y + 1) % 3 == 0 && y < 8 {
+    if (y + 1).is_multiple_of(3) && y < 8 {
         println!("                     ")
     }
 }
