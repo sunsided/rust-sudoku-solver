@@ -1,5 +1,5 @@
-pub(self) mod candidates;
+ mod candidates;
 mod default_solver;
-pub(self) mod steps;
+ mod steps;
 
 pub use default_solver::solve;

@@ -1,9 +1,9 @@
 // TODO: https://stackoverflow.com/questions/27673674/is-there-a-way-to-create-a-data-type-that-only-accepts-a-range-of-values
 // TODO: See https://docs.rs/array2d/0.2.1/array2d/
 
+use crate::State;
 use crate::game::indexbitset::IndexBitSet;
 use crate::prelude::*;
-use crate::State;
 use std::collections::BTreeSet;
 use std::mem::MaybeUninit;
 use std::rc::Rc;
@@ -193,8 +193,8 @@ fn build_default_symbols() -> [Value; 9] {
 /// Builds a default group rooted at the specified offsets.
 fn build_default_group(x_offset: usize, y_offset: usize) -> Rc<IndexBitSet> {
     let mut set = IndexBitSet::default();
-    for y in (0 + y_offset)..(3 + y_offset) {
-        let a = index(0 + x_offset, y, 9) as _;
+    for y in y_offset..(3 + y_offset) {
+        let a = index(x_offset, y, 9) as _;
         let b = index(1 + x_offset, y, 9) as _;
         let c = index(2 + x_offset, y, 9) as _;
 
@@ -227,13 +227,12 @@ fn groups_valid(groups: &Vec<Rc<IndexBitSet>>) -> bool {
 
 /// Builds a reverse index of each cell to its group.
 fn build_default_index_to_group_lookup(groups: &Vec<Rc<IndexBitSet>>) -> [u8; 81] {
-    assert!(groups_valid(&groups));
+    assert!(groups_valid(groups));
 
     let mut group_lookup: [MaybeUninit<u8>; 81] = unsafe { MaybeUninit::uninit().assume_init() };
 
     debug_assert!(groups.len() < 81);
-    for gid in 0..groups.len() {
-        let group = &groups[gid];
+    for (gid, group) in groups.iter().enumerate() {
         for index in group.iter() {
             group_lookup[index as usize] = MaybeUninit::new(gid as u8);
         }

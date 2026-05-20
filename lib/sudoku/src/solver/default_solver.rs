@@ -3,11 +3,11 @@ use std::collections::HashSet;
 use std::iter::FromIterator;
 use std::iter::IntoIterator;
 
+use crate::GameState;
 use crate::game::{CollectType, Placement};
 use crate::prelude::*;
-use crate::solver::candidates::{find_move_candidates, MoveCandidates, SetOfMoveCandidates};
+use crate::solver::candidates::{MoveCandidates, SetOfMoveCandidates, find_move_candidates};
 use crate::solver::steps::{hidden_singles, lone_singles};
-use crate::GameState;
 
 pub fn solve(game: &GameState) -> GameState {
     // Strategies to apply in the given order.
@@ -15,7 +15,7 @@ pub fn solve(game: &GameState) -> GameState {
     let strategies: Vec<StrategyFn> = vec![lone_singles, hidden_singles];
 
     let valid_symbols = collect_valid_symbols(game);
-    let initial_candidates = find_move_candidates(&game, &valid_symbols);
+    let initial_candidates = find_move_candidates(game, &valid_symbols);
 
     let mut stack = Vec::new();
     stack.push((game.clone(), initial_candidates));
@@ -66,8 +66,8 @@ pub fn solve(game: &GameState) -> GameState {
         sorted_candidates.sort_unstable_by_key(|v| v.moves.len());
 
         for candidate_set in sorted_candidates {
-            'candidates: for candidate in candidate_set.moves {
-                let key = (state.id().clone(), candidate.clone());
+            if let Some(candidate) = candidate_set.moves.into_iter().next() {
+                let _key = (state.id().clone(), candidate.clone());
 
                 // Apply a move candidate and fork the game state.
                 let branch = state.apply_and_fork(candidate.index, candidate.value);
@@ -126,15 +126,15 @@ fn apply_simple_strategy_repeatedly(
 
 fn apply_simple_strategy_once(
     strategy: &StrategyFn,
-    mut state: &mut GameState,
-    mut candidates: &mut SetOfMoveCandidates,
+    state: &mut GameState,
+    candidates: &mut SetOfMoveCandidates,
 ) -> Result<bool, bool> {
-    let applied = strategy(&mut state, &candidates);
+    let applied = strategy(state, candidates);
     if applied.is_empty() {
         return Ok(false);
     }
 
-    eliminate_many(&state, &mut candidates, applied.into_iter());
+    eliminate_many(state, candidates, applied.into_iter());
     debug!(
         "  - Candidates left after applying strategy: {}.",
         candidates.total_len()

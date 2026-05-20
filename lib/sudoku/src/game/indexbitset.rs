@@ -76,7 +76,7 @@ impl IndexBitSet {
         self.state == 0
     }
 
-    pub fn iter(&self) -> IndexBitSetIter {
+    pub fn iter(&self) -> IndexBitSetIter<'_> {
         IndexBitSetIter {
             value: self,
             index: 0,
@@ -115,11 +115,7 @@ impl<'a> Iterator for IndexBitSetIter<'a> {
         let matched = self.index;
         self.index += 1;
 
-        if matched >= 81 {
-            None
-        } else {
-            Some(matched)
-        }
+        if matched >= 81 { None } else { Some(matched) }
     }
 }
 

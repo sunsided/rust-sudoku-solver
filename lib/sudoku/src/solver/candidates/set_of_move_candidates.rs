@@ -34,7 +34,7 @@ impl SetOfMoveCandidates {
     pub fn add(&mut self, candidate: Placement) {
         self.moves
             .entry(candidate.index)
-            .or_insert_with(HashSet::new)
+            .or_default()
             .insert(candidate);
     }
 
@@ -47,12 +47,12 @@ impl SetOfMoveCandidates {
             self.moves.remove(&candidate.index);
         }
 
-        self.moves.len() > 0
+        !self.moves.is_empty()
     }
 
     pub fn iter<'a>(&'a self) -> impl Iterator<Item = MoveCandidates> + 'a {
         self.moves.iter().map(|(key, value)| {
-            MoveCandidates::from_iter(key.clone(), value.iter().map(|x| x.clone()))
+            MoveCandidates::from_iter(*key, value.iter().cloned())
         })
     }
 }

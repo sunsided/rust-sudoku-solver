@@ -138,7 +138,7 @@ impl GameState {
             }
 
             let index = self.xy_to_index(x, y);
-            self.collect_index_if(&mut set, index, &how);
+            self.collect_index_if(&mut set, index, how);
         }
         set
     }
@@ -175,7 +175,7 @@ impl GameState {
             }
 
             let index = self.xy_to_index(x, y);
-            self.collect_index_if(&mut set, index, &how);
+            self.collect_index_if(&mut set, index, how);
         }
         set
     }
@@ -211,7 +211,7 @@ impl GameState {
                 continue;
             }
 
-            self.collect_index_if(&mut set, index, &how);
+            self.collect_index_if(&mut set, index, how);
         }
         set
     }

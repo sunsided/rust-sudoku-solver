@@ -4,3 +4,4 @@ members = [
     "lib/visitor",
     "examples/sudoku_solving"
 ]
+resolver = "3"

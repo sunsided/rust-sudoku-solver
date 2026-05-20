@@ -34,7 +34,7 @@ impl State {
     }
 
     pub fn apply_and_fork(&self, index: Index, value: Value) -> State {
-        let mut state = self.values.clone();
+        let mut state = self.values;
         state[index as usize] = Some(value);
         let id = Self::make_id(&self.values);
         State { values: state, id }
@@ -86,7 +86,7 @@ impl Hash for StateId {
 impl Clone for State {
     fn clone(&self) -> Self {
         State {
-            values: self.values.clone(),
+            values: self.values,
             id: self.id.clone(),
         }
     }
