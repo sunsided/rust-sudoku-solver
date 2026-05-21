@@ -80,10 +80,8 @@ impl GameState {
         let mut set = Vec::new();
         let index_reference = self.xy_to_index(x, y);
 
-        for group in self.game.groups.iter() {
-            if !group.contains(index_reference) {
-                continue;
-            }
+        for &gid in self.game.groups_containing(index_reference) {
+            let group = &self.game.groups[gid as usize];
             for index in group.iter() {
                 if exclude_self && (index == index_reference) {
                     continue;
@@ -104,10 +102,8 @@ impl GameState {
         let mut set = Vec::new();
         let index_reference = self.xy_to_index(x, y);
 
-        for group in self.game.groups.iter() {
-            if !group.contains(index_reference) {
-                continue;
-            }
+        for &gid in self.game.groups_containing(index_reference) {
+            let group = &self.game.groups[gid as usize];
             for index in group.iter() {
                 if exclude_self && (index == index_reference) {
                     continue;

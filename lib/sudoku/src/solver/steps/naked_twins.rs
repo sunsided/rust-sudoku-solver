@@ -112,8 +112,9 @@ fn shared_group_indexes(state: &GameState, a: Index, b: Index) -> HashSet<Index>
         }
     }
 
-    for group in state.game.groups.iter() {
-        if group.contains(a) && group.contains(b) {
+    for &gid in state.game.groups_containing(a) {
+        let group = &state.game.groups[gid as usize];
+        if group.contains(b) {
             for index in group.iter() {
                 shared.insert(index);
             }
