@@ -51,9 +51,9 @@ impl SetOfMoveCandidates {
     }
 
     pub fn iter<'a>(&'a self) -> impl Iterator<Item = MoveCandidates> + 'a {
-        self.moves.iter().map(|(key, value)| {
-            MoveCandidates::from_iter(*key, value.iter().cloned())
-        })
+        self.moves
+            .iter()
+            .map(|(key, value)| MoveCandidates::from_iter(*key, value.iter().cloned()))
     }
 }
 
