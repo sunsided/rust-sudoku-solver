@@ -54,7 +54,7 @@ impl GameState {
     ) -> HashSet<Placement> {
         let column = self.get_column_values(x, y, exclude_self);
         let row = self.get_row_values(x, y, exclude_self);
-        let group = self.get_group_values(x, y, exclude_self);
+        let group = self.get_all_groups_values(x, y, exclude_self);
         join_hashset!(column, row, group)
     }
 
@@ -67,8 +67,55 @@ impl GameState {
     ) -> HashSet<Index> {
         let column = self.get_column_indexes(x, y, exclude_self, &how);
         let row = self.get_row_indexes(x, y, exclude_self, &how);
-        let group = self.get_group_indexes(x, y, exclude_self, &how);
+        let group = self.get_all_groups_indexes(x, y, exclude_self, &how);
         join_hashset!(column, row, group)
+    }
+
+    fn get_all_groups_values(
+        &self,
+        x: Coordinate,
+        y: Coordinate,
+        exclude_self: bool,
+    ) -> Vec<Placement> {
+        let mut set = Vec::new();
+        let index_reference = self.xy_to_index(x, y);
+
+        for group in self.game.groups.iter() {
+            if !group.contains(index_reference) {
+                continue;
+            }
+            for index in group.iter() {
+                if exclude_self && (index == index_reference) {
+                    continue;
+                }
+                self.collect_if_set(&mut set, index);
+            }
+        }
+        set
+    }
+
+    fn get_all_groups_indexes(
+        &self,
+        x: Coordinate,
+        y: Coordinate,
+        exclude_self: bool,
+        how: &CollectType,
+    ) -> Vec<Index> {
+        let mut set = Vec::new();
+        let index_reference = self.xy_to_index(x, y);
+
+        for group in self.game.groups.iter() {
+            if !group.contains(index_reference) {
+                continue;
+            }
+            for index in group.iter() {
+                if exclude_self && (index == index_reference) {
+                    continue;
+                }
+                self.collect_index_if(&mut set, index, how);
+            }
+        }
+        set
     }
 
     pub fn apply(&mut self, index: u8, value: Value) {
@@ -191,27 +238,6 @@ impl GameState {
             }
 
             self.collect_if_set(&mut set, index);
-        }
-        set
-    }
-
-    fn get_group_indexes(
-        &self,
-        x: Coordinate,
-        y: Coordinate,
-        exclude_self: bool,
-        how: &CollectType,
-    ) -> Vec<Index> {
-        let mut set = Vec::new();
-        let group = &self.game.group_at(x, y);
-        let index_reference = self.xy_to_index(x, y);
-
-        for index in group.iter() {
-            if exclude_self && (index == index_reference) {
-                continue;
-            }
-
-            self.collect_index_if(&mut set, index, how);
         }
         set
     }
