@@ -141,6 +141,7 @@ fn apply_simple_strategy_once(
             debug_assert!(!applied.is_empty());
             for placement in applied.iter() {
                 state.apply_move(placement);
+                candidates.forget_cell(placement.index);
             }
             eliminate_many(state, candidates, applied.into_iter());
         }
