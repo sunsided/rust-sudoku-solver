@@ -139,6 +139,9 @@ fn apply_simple_strategy_once(
         }
         StrategyMove::Applied(applied) => {
             debug_assert!(!applied.is_empty());
+            for placement in applied.iter() {
+                state.apply_move(placement);
+            }
             eliminate_many(state, candidates, applied.into_iter());
         }
         StrategyMove::EliminateOnly(eliminate) => {

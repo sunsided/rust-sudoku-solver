@@ -4,7 +4,7 @@ use crate::solver::steps::{StrategyError, StrategyMove};
 use log::trace;
 
 pub fn lone_singles(
-    state: &mut GameState,
+    _state: &mut GameState,
     candidates: &SetOfMoveCandidates,
 ) -> Result<StrategyMove, StrategyError> {
     let mut applied = Vec::new();
@@ -20,7 +20,6 @@ pub fn lone_singles(
                 value = r#move.value,
                 index = r#move.index
             );
-            state.apply_move(r#move);
         }
 
         applied.extend(candidate.moves);

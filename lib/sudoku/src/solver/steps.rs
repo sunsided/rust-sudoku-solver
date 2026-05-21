@@ -14,9 +14,11 @@ pub type StrategyFn =
 pub enum StrategyMove {
     /// The strategy yielded no result.
     None,
-    /// Lists the moves to apply and to eliminate in all peers.
+    /// Placements the solver should apply to the board and eliminate
+    /// from all peers. Strategies must not mutate `state` themselves.
     Applied(Vec<Placement>),
-    /// Lists the placements to eliminate.
+    /// Candidates the solver should remove from the candidate set without
+    /// touching the board state.
     EliminateOnly(Vec<Placement>),
 }
 
