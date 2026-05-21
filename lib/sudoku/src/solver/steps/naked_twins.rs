@@ -93,16 +93,34 @@ pub fn naked_twins(
     Ok(StrategyMove::EliminateOnly(eliminations))
 }
 
-/// Returns indexes that are peers of both twin cells, matching the peer logic
-/// used elsewhere in the solver.
+/// Returns indexes of cells in units (row, column, irregular group) that
+/// contain both twin cells, excluding the twin cells themselves.
 fn shared_group_indexes(state: &GameState, a: Index, b: Index) -> HashSet<Index> {
-    let peers_a: HashSet<Index> = state
-        .peer_indexes_by_index(a, true, CollectType::All)
-        .into_iter()
-        .collect();
-    let peers_b: HashSet<Index> = state
-        .peer_indexes_by_index(b, true, CollectType::All)
-        .into_iter()
-        .collect();
-    peers_a.intersection(&peers_b).copied().collect()
+    let (ax, ay) = state.index_to_xy(a);
+    let (bx, by) = state.index_to_xy(b);
+    let mut shared: HashSet<Index> = HashSet::new();
+
+    if ay == by {
+        for x in 0..state.game.width {
+            shared.insert(state.xy_to_index(x, ay));
+        }
+    }
+
+    if ax == bx {
+        for y in 0..state.game.height {
+            shared.insert(state.xy_to_index(ax, y));
+        }
+    }
+
+    for group in state.game.groups.iter() {
+        if group.contains(a) && group.contains(b) {
+            for index in group.iter() {
+                shared.insert(index);
+            }
+        }
+    }
+
+    shared.remove(&a);
+    shared.remove(&b);
+    shared
 }
