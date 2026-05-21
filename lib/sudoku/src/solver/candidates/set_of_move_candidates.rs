@@ -50,10 +50,14 @@ impl SetOfMoveCandidates {
         !self.moves.is_empty()
     }
 
+    pub fn forget_cell(&mut self, index: Index) {
+        self.moves.remove(&index);
+    }
+
     pub fn iter<'a>(&'a self) -> impl Iterator<Item = MoveCandidates> + 'a {
-        self.moves.iter().map(|(key, value)| {
-            MoveCandidates::from_iter(*key, value.iter().cloned())
-        })
+        self.moves
+            .iter()
+            .map(|(key, value)| MoveCandidates::from_iter(*key, value.iter().cloned()))
     }
 }
 

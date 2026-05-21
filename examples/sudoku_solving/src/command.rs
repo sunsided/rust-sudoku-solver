@@ -1,7 +1,6 @@
 use clap::{Arg, ArgGroup, Command};
 
 pub fn build_command() -> Command {
-    
     Command::new("Sudoku Solver Example")
         .version("0.1.0")
         .author("Markus Mayer")

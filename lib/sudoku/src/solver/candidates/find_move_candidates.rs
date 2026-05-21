@@ -30,9 +30,7 @@ fn collect_missing_values(
 ) -> HashSet<Value> {
     let cell_values = state.peers_by_index(index, false);
     let value_set = to_value_set(cell_values);
-    valid_symbols
-        .difference(&value_set).copied()
-        .collect()
+    valid_symbols.difference(&value_set).copied().collect()
 }
 
 fn to_value_set(set: HashSet<Placement>) -> HashSet<Value> {

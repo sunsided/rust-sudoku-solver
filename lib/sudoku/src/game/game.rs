@@ -17,6 +17,7 @@ pub struct Game {
     initial_state: State,
     pub groups: Vec<Rc<IndexBitSet>>,
     group_lookup: [u8; 81],
+    groups_per_index: Vec<Vec<GroupId>>,
 }
 
 impl Game {
@@ -25,6 +26,7 @@ impl Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
+        let groups_per_index = build_groups_per_index(&groups);
         Game {
             width: 9,
             height: 9,
@@ -32,12 +34,14 @@ impl Game {
             initial_state: State::new(state.into()),
             groups,
             group_lookup,
+            groups_per_index,
         }
     }
 
     pub fn new_with_groups<S: IntoValues>(state: S, groups: Vec<Rc<IndexBitSet>>) -> Game {
         let symbols = build_default_symbols();
         let group_lookup = build_default_index_to_group_lookup(&groups);
+        let groups_per_index = build_groups_per_index(&groups);
         Game {
             width: 9,
             height: 9,
@@ -45,6 +49,7 @@ impl Game {
             initial_state: State::new(state.into()),
             groups,
             group_lookup,
+            groups_per_index,
         }
     }
 
@@ -52,6 +57,7 @@ impl Game {
         let symbols = build_default_symbols();
         let groups = build_set_of_default_groups();
         let group_lookup = build_default_index_to_group_lookup(&groups);
+        let groups_per_index = build_groups_per_index(&groups);
         Game {
             width: 9,
             height: 9,
@@ -59,7 +65,12 @@ impl Game {
             initial_state: State::new([None; 81]),
             groups,
             group_lookup,
+            groups_per_index,
         }
+    }
+
+    pub fn groups_containing(&self, index: Index) -> &[GroupId] {
+        &self.groups_per_index[index as usize]
     }
 
     #[rustfmt::skip]
@@ -223,6 +234,17 @@ fn groups_valid(groups: &Vec<Rc<IndexBitSet>>) -> bool {
         set.extend(group.iter());
     }
     set.len() == 81
+}
+
+/// Builds a reverse index of each cell to all groups containing it.
+fn build_groups_per_index(groups: &Vec<Rc<IndexBitSet>>) -> Vec<Vec<GroupId>> {
+    let mut result: Vec<Vec<GroupId>> = vec![Vec::new(); 81];
+    for (gid, group) in groups.iter().enumerate() {
+        for index in group.iter() {
+            result[index as usize].push(gid as GroupId);
+        }
+    }
+    result
 }
 
 /// Builds a reverse index of each cell to its group.

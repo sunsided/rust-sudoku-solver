@@ -7,12 +7,13 @@ use crate::GameState;
 use crate::game::{CollectType, Placement};
 use crate::prelude::*;
 use crate::solver::candidates::{MoveCandidates, SetOfMoveCandidates, find_move_candidates};
-use crate::solver::steps::{hidden_singles, lone_singles};
+use crate::solver::steps::{
+    StrategyError, StrategyFn, StrategyMove, hidden_singles, lone_singles, naked_twins,
+};
 
 pub fn solve(game: &GameState) -> GameState {
     // Strategies to apply in the given order.
-    // TODO: Apply naked twins strategy
-    let strategies: Vec<StrategyFn> = vec![lone_singles, hidden_singles];
+    let strategies: Vec<StrategyFn> = vec![lone_singles, hidden_singles, naked_twins];
 
     let valid_symbols = collect_valid_symbols(game);
     let initial_candidates = find_move_candidates(game, &valid_symbols);
@@ -67,12 +68,9 @@ pub fn solve(game: &GameState) -> GameState {
 
         for candidate_set in sorted_candidates {
             if let Some(candidate) = candidate_set.moves.into_iter().next() {
-                let _key = (state.id().clone(), candidate.clone());
-
                 // Apply a move candidate and fork the game state.
                 let branch = state.apply_and_fork(candidate.index, candidate.value);
                 let branch_candidates = find_move_candidates(&branch, &valid_symbols);
-
                 debug_assert!(!branch_candidates.is_empty());
                 debug!(
                     "  + Branching; {} candidates to explore",
@@ -102,8 +100,6 @@ pub fn solve(game: &GameState) -> GameState {
     unreachable!()
 }
 
-pub type StrategyFn = fn(&mut GameState, &SetOfMoveCandidates) -> Vec<Placement>;
-
 fn apply_simple_strategy_repeatedly(
     strategy: &StrategyFn,
     state: &mut GameState,
@@ -129,12 +125,33 @@ fn apply_simple_strategy_once(
     state: &mut GameState,
     candidates: &mut SetOfMoveCandidates,
 ) -> Result<bool, bool> {
-    let applied = strategy(state, candidates);
-    if applied.is_empty() {
-        return Ok(false);
+    let applied = match strategy(state, candidates) {
+        Ok(strategy_move) => strategy_move,
+        Err(StrategyError::BoardInvalid) => {
+            debug!("  ! Branch is invalid.");
+            return Err(false);
+        }
+    };
+
+    match applied {
+        StrategyMove::None => {
+            return Ok(false);
+        }
+        StrategyMove::Applied(applied) => {
+            debug_assert!(!applied.is_empty());
+            for placement in applied.iter() {
+                state.apply_move(placement);
+                candidates.forget_cell(placement.index);
+            }
+            eliminate_many(state, candidates, applied.into_iter());
+        }
+        StrategyMove::EliminateOnly(eliminate) => {
+            for candidate in eliminate.into_iter() {
+                candidates.forget_candidate(&candidate);
+            }
+        }
     }
 
-    eliminate_many(state, candidates, applied.into_iter());
     debug!(
         "  - Candidates left after applying strategy: {}.",
         candidates.total_len()

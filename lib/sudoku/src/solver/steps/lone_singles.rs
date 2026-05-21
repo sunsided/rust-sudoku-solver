@@ -1,8 +1,12 @@
 use crate::GameState;
-use crate::game::Placement;
 use crate::solver::candidates::SetOfMoveCandidates;
+use crate::solver::steps::{StrategyError, StrategyMove};
+use log::trace;
 
-pub fn lone_singles(state: &mut GameState, candidates: &SetOfMoveCandidates) -> Vec<Placement> {
+pub fn lone_singles(
+    _state: &mut GameState,
+    candidates: &SetOfMoveCandidates,
+) -> Result<StrategyMove, StrategyError> {
     let mut applied = Vec::new();
 
     for candidate in candidates.iter() {
@@ -11,11 +15,19 @@ pub fn lone_singles(state: &mut GameState, candidates: &SetOfMoveCandidates) -> 
         }
 
         for r#move in &candidate.moves {
-            state.apply_move(r#move);
+            trace!(
+                "  * Lone single {value} at index {index}",
+                value = r#move.value,
+                index = r#move.index
+            );
         }
 
         applied.extend(candidate.moves);
     }
 
-    applied
+    if applied.is_empty() {
+        Ok(StrategyMove::None)
+    } else {
+        Ok(StrategyMove::Applied(applied))
+    }
 }
