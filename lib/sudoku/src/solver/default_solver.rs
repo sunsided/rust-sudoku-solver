@@ -6,9 +6,9 @@ use std::iter::IntoIterator;
 use crate::GameState;
 use crate::game::{CollectType, Placement};
 use crate::prelude::*;
-use crate::solver::candidates::{find_move_candidates, MoveCandidates, SetOfMoveCandidates};
+use crate::solver::candidates::{MoveCandidates, SetOfMoveCandidates, find_move_candidates};
 use crate::solver::steps::{
-    hidden_singles, lone_singles, naked_twins, StrategyError, StrategyFn, StrategyMove,
+    StrategyError, StrategyFn, StrategyMove, hidden_singles, lone_singles, naked_twins,
 };
 
 pub fn solve(game: &GameState) -> GameState {
@@ -67,15 +67,7 @@ pub fn solve(game: &GameState) -> GameState {
         sorted_candidates.sort_unstable_by_key(|v| v.moves.len());
 
         for candidate_set in sorted_candidates {
-            for candidate in candidate_set.moves {
-                // We remove (not eliminate!) the candidate we just forked and requeue the current
-                // branch if it still contains options.
-                candidates.forget_candidate(&candidate);
-                if !candidates.is_empty() {
-                    debug!("  + Pushing base branch");
-                    stack.push((state.clone(), candidates.clone()));
-                }
-
+            if let Some(candidate) = candidate_set.moves.into_iter().next() {
                 // Apply a move candidate and fork the game state.
                 let branch = state.apply_and_fork(candidate.index, candidate.value);
                 let branch_candidates = find_move_candidates(&branch, &valid_symbols);
@@ -85,6 +77,14 @@ pub fn solve(game: &GameState) -> GameState {
                     branch_candidates.total_len()
                 );
                 stack.push((branch, branch_candidates));
+
+                // We remove (not eliminate!) the candidate we just forked and requeue the current
+                // branch if it still contains options.
+                candidates.forget_candidate(&candidate);
+                if !candidates.is_empty() {
+                    debug!("  + Pushing base branch");
+                    stack.push((state.clone(), candidates.clone()));
+                }
 
                 continue 'stack;
             }
