@@ -35,7 +35,7 @@ impl MoveCandidates {
         self.moves.len()
     }
 
-    pub fn empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.moves.is_empty()
     }
 }
